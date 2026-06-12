@@ -1,1205 +1,1012 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Calculadora Financiera - Caro</title>
+  <title>Calculadora Renta Fija - Caro</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     * { box-sizing: border-box; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
-
     :root {
-      --bg: #0f172a; --card: rgba(15, 23, 42, 0.95); --text: #e5e7eb; --muted: #9ca3af;
-      --brand: #a5b4fc; --border: rgba(148, 163, 184, 0.25); --accent1: #38bdf8; --accent2: #8b5cf6;
-      --warning: #f97316; --success: #22c55e; --outline: #4b5563; --flash: rgba(250, 204, 21, 0.18);
+      --bg: #0f172a; --card: rgba(15,23,42,0.95); --text: #e5e7eb; --muted: #9ca3af;
+      --brand: #a5b4fc; --border: rgba(148,163,184,0.25); --accent1: #38bdf8; --accent2: #8b5cf6;
+      --success: #22c55e; --warning: #f97316; --outline: #4b5563; --flash: rgba(250,204,21,0.18);
     }
-
-    body {
-      margin: 0; padding: 0; background: var(--bg); color: var(--text);
-      display: flex; justify-content: center; align-items: flex-start; min-height: 100vh;
-    }
-
     body.light {
-      --bg: #f6f7fb;
-      --card: #ffffff;
-      --text: #111827;
-      --muted: #6b7280;
-      --brand: #6d28d9;
-      --border: rgba(17, 24, 39, 0.12);
-      --outline: #e5e7eb;
+      --bg: #f6f7fb; --card: #ffffff; --text: #111827; --muted: #6b7280;
+      --brand: #6d28d9; --border: rgba(17,24,39,0.12); --outline: #e5e7eb;
     }
-
-    .app { width: 100%; max-width: 1100px; padding: 24px 16px 40px; }
-    header { margin-bottom: 16px; }
-    h1 { text-align: center; margin-bottom: 4px; }
-
-    .subtitle { text-align: center; font-size: 0.9rem; color: var(--muted); margin-bottom: 8px; }
-    .brand { text-align: center; font-size: 0.8rem; color: var(--brand); letter-spacing: 0.12em; text-transform: uppercase; }
-
-    .tag { display: inline-block; padding: 2px 8px; border-radius: 999px; border: 1px solid rgba(148, 163, 184, 0.5); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; margin-left: 6px; }
-
-    #theme-toggle { margin: 10px auto; display: block; max-width: 220px; }
-
-    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-top: 16px; }
-    .card { background: var(--card); border-radius: 16px; padding: 16px 18px 18px; box-shadow: 0 10px 30px rgba(0,0,0,0.25); border: 1px solid var(--border); }
-    .card h2 { margin-top: 0; margin-bottom: 6px; font-size: 1.05rem; }
-    .card small { display: block; margin-bottom: 12px; color: var(--muted); }
-
-    label { display: block; margin-top: 8px; margin-bottom: 4px; font-size: 0.85rem; color: #d1d5db; }
-    input, select, textarea { width: 100%; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--outline); background: #020617; color: var(--text); font-size: 0.9rem; outline: none; }
-    textarea { min-height: 72px; resize: vertical; }
-    input:focus, select:focus, textarea:focus { border-color: var(--accent1); box-shadow: 0 0 0 1px rgba(56,189,248,0.4); }
-
-    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    button { margin-top: 12px; width: 100%; padding: 9px 10px; border-radius: 999px; border: none; background: linear-gradient(135deg, var(--accent1), var(--accent2)); color: white; font-size: 0.95rem; font-weight: 600; cursor: pointer; }
-    button:hover { filter: brightness(1.05); }
-
-    .result { margin-top: 10px; padding: 8px 10px; border-radius: 10px; background: rgba(15,23,42,0.9); border: 1px dashed rgba(148,163,184,0.6); font-size: 0.9rem; min-height: 44px; }
-    .result strong { display: block; font-size: 1rem; margin-bottom: 2px; color: #facc15; }
-
-    .footer-note { margin-top: 24px; text-align: center; font-size: 0.8rem; color: var(--muted); line-height: 1.4; }
-    .formula { display: block; margin-top: 4px; }
-
-    .amort-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.8rem; }
-    .amort-table th, .amort-table td { border-bottom: 1px solid #1f2937; padding: 4px 6px; text-align: right; }
-    .amort-table th:first-child, .amort-table td:first-child { text-align: center; }
-    .amort-table tfoot td { font-weight: 600; border-top: 1px solid #4b5563; }
-
-    .index-card { grid-column: 1 / -1; }
-    .index-card ol { padding-left: 18px; margin: 0; font-size: 0.9rem; }
-    .index-card li { margin-bottom: 8px; }
-    .index-item { background: none; border: none; color: var(--text); padding: 2px 0; text-align: left; font-size: 0.9rem; font-weight: 600; cursor: pointer; width: 100%; }
-    .index-item:hover { color: var(--accent1); }
-    .index-detail { margin-top: 6px; margin-bottom: 10px; padding-left: 8px; font-size: 0.85rem; color: #d1d5db; }
-    .mount-slot { margin-top: 8px; }
-
-    .input-error { border-color: #ef4444 !important; box-shadow: 0 0 0 1px rgba(239,68,68,0.4) !important; }
-
-    .flash { animation: flashBg 1.6s ease-out; }
-    @keyframes flashBg { 0% { box-shadow: 0 0 0 0 var(--flash); } 30% { box-shadow: 0 0 0 8px var(--flash); } 100% { box-shadow: 0 0 0 0 transparent; } }
-
-    .chart {
-      width: 100%;
-      height: 240px;
-      border: 1px dashed rgba(148,163,184,0.35);
-      border-radius: 8px;
-      background: rgba(2,6,23,0.35);
-      margin-top: 10px;
-    }
-    .chart text { fill: var(--muted); font-size: 11px; }
-    #theme-toggle { margin: 10px auto; display:block; max-width: 220px; }
+    body { margin:0; padding:0; background:var(--bg); color:var(--text); display:flex; justify-content:center; min-height:100vh; }
+    .app { width:100%; max-width:1140px; padding:24px 16px 48px; }
+    header { margin-bottom:20px; text-align:center; }
+    h1 { margin-bottom:4px; }
+    .subtitle { font-size:.9rem; color:var(--muted); margin-bottom:6px; }
+    .brand { font-size:.8rem; color:var(--brand); letter-spacing:.12em; text-transform:uppercase; }
+    .tag { display:inline-block; padding:2px 8px; border-radius:999px; border:1px solid rgba(148,163,184,.5); font-size:.7rem; text-transform:uppercase; letter-spacing:.05em; margin-left:6px; }
+    #theme-toggle { margin:10px auto; display:block; max-width:200px; }
+ 
+    /* NAV TABS */
+    .tabs { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:18px; }
+    .tab-btn { padding:7px 14px; border-radius:999px; border:1px solid var(--border); background:transparent; color:var(--muted); font-size:.85rem; cursor:pointer; transition:all .15s; }
+    .tab-btn:hover { color:var(--text); border-color:var(--accent1); }
+    .tab-btn.active { background:linear-gradient(135deg,var(--accent1),var(--accent2)); color:#fff; border-color:transparent; }
+    .tab-panel { display:none; }
+    .tab-panel.active { display:block; }
+ 
+    .cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:16px; }
+    .card { background:var(--card); border-radius:16px; padding:18px; box-shadow:0 10px 30px rgba(0,0,0,.25); border:1px solid var(--border); }
+    .card h2 { margin-top:0; margin-bottom:4px; font-size:1.05rem; }
+    .card small { display:block; margin-bottom:12px; color:var(--muted); }
+    label { display:block; margin-top:8px; margin-bottom:3px; font-size:.85rem; color:#d1d5db; }
+    input, select, textarea { width:100%; padding:8px 10px; border-radius:10px; border:1px solid var(--outline); background:#020617; color:var(--text); font-size:.9rem; outline:none; }
+    body.light input, body.light select, body.light textarea { background:#f1f5f9; }
+    textarea { min-height:70px; resize:vertical; }
+    input:focus, select:focus, textarea:focus { border-color:var(--accent1); box-shadow:0 0 0 1px rgba(56,189,248,.4); }
+    .row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .row3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; }
+    button { margin-top:12px; width:100%; padding:9px 10px; border-radius:999px; border:none; background:linear-gradient(135deg,var(--accent1),var(--accent2)); color:#fff; font-size:.95rem; font-weight:600; cursor:pointer; }
+    button:hover { filter:brightness(1.05); }
+    .btn-sm { margin-top:8px; padding:6px 12px; font-size:.8rem; }
+    .result { margin-top:10px; padding:10px 12px; border-radius:10px; background:rgba(15,23,42,.9); border:1px dashed rgba(148,163,184,.6); font-size:.88rem; min-height:44px; line-height:1.55; }
+    body.light .result { background:rgba(241,245,249,.9); }
+    .result strong { display:block; font-size:1rem; margin-bottom:3px; color:#facc15; }
+    .result .ok { color:var(--success); }
+    .result .warn { color:var(--warning); }
+    .result .row-metric { display:flex; justify-content:space-between; border-bottom:1px solid rgba(148,163,184,.15); padding:3px 0; }
+    .result .row-metric:last-child { border-bottom:none; }
+    .result .metric-label { color:var(--muted); }
+    .result .metric-value { font-weight:600; }
+    .input-error { border-color:#ef4444 !important; box-shadow:0 0 0 1px rgba(239,68,68,.4) !important; }
+    .chart { width:100%; height:220px; border:1px dashed rgba(148,163,184,.35); border-radius:8px; background:rgba(2,6,23,.35); margin-top:10px; }
+    body.light .chart { background:rgba(241,245,249,.5); }
+    .chart text { fill:var(--muted); font-size:11px; }
+    .amort-table { width:100%; border-collapse:collapse; margin-top:10px; font-size:.8rem; }
+    .amort-table th,.amort-table td { border-bottom:1px solid #1f2937; padding:4px 6px; text-align:right; }
+    .amort-table th:first-child,.amort-table td:first-child { text-align:center; }
+    .amort-table tfoot td { font-weight:600; border-top:1px solid #4b5563; }
+    .sensitivity-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:4px; margin-top:8px; }
+    .sens-cell { text-align:center; padding:6px 4px; border-radius:6px; font-size:.82rem; }
+    .sens-up { background:rgba(239,68,68,.18); color:#fca5a5; }
+    .sens-dn { background:rgba(34,197,94,.18); color:#86efac; }
+    .sens-base { background:rgba(56,189,248,.18); color:#7dd3fc; }
+    .flash { animation:flashBg 1.6s ease-out; }
+    @keyframes flashBg { 0%{box-shadow:0 0 0 0 var(--flash);} 30%{box-shadow:0 0 0 8px var(--flash);} 100%{box-shadow:0 0 0 0 transparent;} }
+    .footer-note { margin-top:24px; text-align:center; font-size:.8rem; color:var(--muted); line-height:1.6; }
   </style>
 </head>
 <body>
-  <div class="app">
-    <header>
-      <h1>Calculadora Financiera</h1>
-      <div class="subtitle">
-        Laboratorio de valor del dinero en el tiempo, tasas, cuotas y proyectos
-        <span class="tag">beta</span>
-      </div>
-      <div class="brand">by Carolina Sinead Felipe</div>
-
-      <!-- Botón tema -->
-      <button id="theme-toggle">🌗 Cambiar tema (claro/oscuro)</button>
-    </header>
-
+<div class="app">
+  <header>
+    <h1>Calculadora Financiera <span class="tag">RF</span></h1>
+    <div class="subtitle">Valor del dinero · Tasas · Bonos · Renta Fija<span class="tag">beta</span></div>
+    <div class="brand">by Carolina Sinead Felipe</div>
+    <button id="theme-toggle">🌗 Cambiar tema</button>
+  </header>
+ 
+  <!-- TABS NAV -->
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="basicos">💰 Básicos</button>
+    <button class="tab-btn" data-tab="bonos">📊 Bonos (Precio & Rendimiento)</button>
+    <button class="tab-btn" data-tab="sensibilidad">📉 Sensibilidad & Duración</button>
+    <button class="tab-btn" data-tab="curvas">📈 Curvas & Forward</button>
+    <button class="tab-btn" data-tab="proyectos">🏗️ Proyectos & Créditos</button>
+    <button class="tab-btn" data-tab="ahorro">🏦 Ahorro & Plazo Fijo</button>
+  </div>
+ 
+  <!-- ===== TAB: BÁSICOS ===== -->
+  <div class="tab-panel active" id="tab-basicos">
     <div class="cards">
-      <!-- ÍNDICE DE MÓDULOS -->
-      <section class="card index-card" aria-label="Índice de módulos">
-        <h2>Índice de módulos</h2>
-        <small>Hacé click en cada título para usar la herramienta acá mismo o verla en la grilla.</small>
-
-        <ol>
-          <!-- Panel Inversores -->
-          <li>
-            <strong>
-              <button class="index-item" aria-expanded="false" aria-controls="panel-inversores" data-panel="panel-inversores">
-                Para inversionistas y ahorristas comunes
-              </button>
-            </strong>
-            <div id="panel-inversores" class="index-detail" hidden>
-              <ol>
-                <li>
-                  <button class="index-item mount-card" data-card="pf-uva-card">Comparador de Plazo Fijo tradicional vs UVA</button>
-                  <div class="mount-slot" id="slot-pf-uva"></div>
-                </li>
-                <li>
-                  <button class="index-item mount-card" data-card="simulador-card">Simulador de interés compuesto con aportes variables</button>
-                  <div class="mount-slot" id="slot-simulador"></div>
-                </li>
-                <li>
-                  <button class="index-item mount-card" data-card="objetivos-card">Plan de ahorro para objetivos</button>
-                  <div class="mount-slot" id="slot-objetivos"></div>
-                </li>
-                <li>
-                  <button class="index-item mount-card" data-card="tc-card">Calculadora de tipo de cambio</button>
-                  <div class="mount-slot" id="slot-tc"></div>
-                </li>
-              </ol>
-            </div>
-          </li>
-
-          <!-- Panel Corporativos -->
-          <li style="margin-top:10px;">
-            <strong>
-              <button class="index-item" aria-expanded="false" aria-controls="panel-corporativos" data-panel="panel-corporativos">
-                Para analistas financieros / corporativos
-              </button>
-            </strong>
-            <div id="panel-corporativos" class="index-detail" hidden>
-              <ol start="5">
-                <li>
-                  <button class="index-item mount-card" data-card="van-tir-card">VAN y TIR (Flujos de caja)</button>
-                  <div class="mount-slot" id="slot-van-tir"></div>
-                </li>
-                <li>
-                  <button class="index-item mount-card" data-card="duration-card">Duración y Duration modificada (bonos)</button>
-                  <div class="mount-slot" id="slot-duration"></div>
-                </li>
-                <li>
-                  <button class="index-item mount-card" data-card="curva-card">Curva de bonos simple</button>
-                  <div class="mount-slot" id="slot-curva"></div>
-                </li>
-                <li>
-                  <button class="index-item mount-card" data-card="paridad-card">Cálculo de paridad de bonos</button>
-                  <div class="mount-slot" id="slot-paridad"></div>
-                </li>
-              </ol>
-            </div>
-          </li>
-        </ol>
-      </section>
-
-      <!-- === MÓDULOS EN LA GRILLA (originales) === -->
-      <!-- PF vs UVA -->
-      <section class="card" id="pf-uva-card">
-        <h2>Comparador PF tradicional vs UVA</h2>
-        <small>Ingresá tu escenario y compará cuál rinde más, en términos nominales y reales.</small>
-        <label for="pf-monto">Monto a invertir</label><input id="pf-monto" type="number" inputmode="decimal" placeholder="Ej: 100000" />
-        <label for="pf-tna">TNA Plazo Fijo tradicional (%)</label><input id="pf-tna" type="number" step="0.01" inputmode="decimal" placeholder="Ej: 110" />
-        <label for="pf-inflacion">Inflación esperada anual (%)</label><input id="pf-inflacion" type="number" step="0.01" inputmode="decimal" placeholder="Ej: 180" />
-        <label for="pf-plus">Plus real UVA sobre inflación (opcional, % anual)</label><input id="pf-plus" type="number" step="0.01" inputmode="decimal" placeholder="Ej: 0 ó 5" />
-        <label for="pf-dias">Plazo en días</label><input id="pf-dias" type="number" inputmode="numeric" placeholder="Ej: 30, 60, 90, 180" />
-        <button id="btn-pf-uva">Comparar PF vs UVA</button>
-        <div class="result" id="pf-uva-result">Ingresá los datos…</div>
-        <svg id="pf-uva-chart" class="chart" aria-label="Gráfico PF vs UVA"></svg>
-      </section>
-
-      <!-- Conversor de tasas -->
-      <section class="card" id="tasas-card">
+      <!-- Conversor tasas -->
+      <section class="card">
         <h2>Conversor de tasas</h2>
-        <small>TNA, TEA y TEM suponiendo capitalización mensual (12 períodos al año).</small>
-        <label for="rate-type">Tipo de tasa conocida</label>
-        <select id="rate-type"><option value="tna">TNA</option><option value="tea">TEA</option><option value="tem">TEM</option></select>
-        <label for="rate-input">Valor de la tasa (%)</label><input id="rate-input" type="number" step="0.0001" inputmode="decimal" placeholder="Ej: 97 (TNA) ó 8 (TEM)" />
+        <small>TNA / TEA / TEM / TES (semestral) — capitalización configurable.</small>
+        <label>Tipo de tasa conocida</label>
+        <select id="rate-type">
+          <option value="tna">TNA (Nominal Anual)</option>
+          <option value="tea">TEA (Efectiva Anual)</option>
+          <option value="tem">TEM (Efectiva Mensual)</option>
+          <option value="tes">TES (Efectiva Semestral)</option>
+        </select>
+        <label>Valor (%)</label><input id="rate-input" type="number" step="0.0001" placeholder="Ej: 97" />
+        <label>Períodos por año (para TNA)</label>
+        <select id="rate-freq"><option value="12">12 — mensual</option><option value="2">2 — semestral</option><option value="4">4 — trimestral</option><option value="1">1 — anual</option></select>
         <button id="btn-rate-convert">Convertir</button>
         <div class="result" id="rate-result">Ingresá una tasa…</div>
       </section>
-
-      <!-- Simulador con aportes variables -->
-      <section class="card" id="simulador-card">
-        <h2>Simulador inversión con aportes variables</h2>
-        <small>Capital inicial + aportes por período con interés compuesto. Podés usar aporte fijo o lista variable.</small>
-        <label for="sim-pv">Capital inicial (opcional)</label><input id="sim-pv" type="number" inputmode="decimal" placeholder="Ej: 50000" />
-        <label for="sim-pmt">Aporte fijo por período (opcional)</label><input id="sim-pmt" type="number" inputmode="decimal" placeholder="Ej: 20000" />
-        <label for="sim-aportes">Aportes variables (opcional, separados por comas o líneas)</label><textarea id="sim-aportes" placeholder="Ej: 20000, 0, 15000, 50000"></textarea>
-        <label for="sim-rate">Tasa por período (%)</label><input id="sim-rate" type="number" step="0.0001" inputmode="decimal" placeholder="Ej: 5" />
+ 
+      <!-- FV -->
+      <section class="card">
+        <h2>Valor Futuro (FV)</h2><small>FV = PV · (1+i)ⁿ</small>
+        <label>PV (monto inicial)</label><input id="fv-pv" type="number" placeholder="Ej: 100000" />
+        <label>Tasa por período (%)</label><input id="fv-rate" type="number" step="0.0001" placeholder="Ej: 5" />
         <div class="row">
-          <div><label for="sim-n">Cantidad de períodos (n)</label><input id="sim-n" type="number" inputmode="numeric" placeholder="Ej: 12" /></div>
-          <div><label for="sim-period">Período</label><select id="sim-period"><option value="mensual">Mensual</option><option value="anual">Anual</option><option value="otro">Otro</option></select></div>
+          <div><label>n (períodos)</label><input id="fv-n" type="number" placeholder="Ej: 12" /></div>
+          <div><label>Período</label><select id="fv-period"><option>mensual</option><option>anual</option><option>otro</option></select></div>
         </div>
-        <button id="btn-sim">Calcular inversión</button>
-        <div class="result" id="sim-result">Cargá tasa, aportes…</div>
-        <svg id="sim-chart" class="chart" aria-label="Evolución de aportes"></svg>
+        <button id="btn-fv">Calcular FV</button>
+        <div class="result" id="fv-result">Ingresá datos…</div>
       </section>
-
-      <!-- Objetivos -->
-      <section class="card" id="objetivos-card">
-        <h2>Plan de ahorro para objetivos</h2>
-        <small>Calculá el aporte periódico necesario para alcanzar un objetivo.</small>
-        <label for="obj-fv">Objetivo a alcanzar (FV)</label><input id="obj-fv" type="number" inputmode="decimal" placeholder="Ej: 1000000" />
-        <label for="obj-pv">Capital inicial (PV, opcional)</label><input id="obj-pv" type="number" inputmode="decimal" placeholder="Ej: 50000" />
-        <label for="obj-rate">Tasa por período (%)</label><input id="obj-rate" type="number" step="0.0001" inputmode="decimal" placeholder="Ej: 4" />
+ 
+      <!-- PV -->
+      <section class="card">
+        <h2>Valor Presente (PV)</h2><small>PV = FV / (1+i)ⁿ</small>
+        <label>FV (monto futuro)</label><input id="pv-fv" type="number" placeholder="Ej: 500000" />
+        <label>Tasa por período (%)</label><input id="pv-rate" type="number" step="0.0001" placeholder="Ej: 4" />
         <div class="row">
-          <div><label for="obj-n">Cantidad de períodos (n)</label><input id="obj-n" type="number" inputmode="numeric" placeholder="Ej: 36" /></div>
-          <div><label for="obj-period">Período</label><select id="obj-period"><option value="mensual">Mensual</option><option value="anual">Anual</option><option value="otro">Otro</option></select></div>
+          <div><label>n</label><input id="pv-n" type="number" placeholder="Ej: 24" /></div>
+          <div><label>Período</label><select id="pv-period"><option>mensual</option><option>anual</option><option>otro</option></select></div>
         </div>
-        <button id="btn-obj">Calcular aporte necesario</button>
-        <div class="result" id="obj-result">Ingresá objetivo, tasa y n…</div>
+        <button id="btn-pv">Calcular PV</button>
+        <div class="result" id="pv-result">Ingresá datos…</div>
       </section>
-
-      <!-- Tipo de cambio (ACTUALIZADO con todos los tipos auto) -->
-      <section class="card" id="tc-card">
-        <h2>Calculadora de tipo de cambio</h2>
-        <small>Convertí entre ARS y USD según el tipo de cambio elegido (manual o auto de BNA/MEP/CCL/Blue/Mayorista/Solidario/Tarjeta/Cripto).</small>
-
-        <label for="tc-monto">Monto</label>
-        <input id="tc-monto" type="number" inputmode="decimal" placeholder="Ej: 10000" />
-
+ 
+      <!-- PMT -->
+      <section class="card">
+        <h2>Cuota (PMT)</h2><small>PMT = PV · i / (1−(1+i)⁻ⁿ)</small>
+        <label>PV</label><input id="pmt-pv" type="number" placeholder="Ej: 300000" />
+        <label>Tasa por período (%)</label><input id="pmt-rate" type="number" step="0.0001" placeholder="Ej: 6" />
         <div class="row">
-          <div>
-            <label for="tc-direccion">Dirección</label>
+          <div><label>n</label><input id="pmt-n" type="number" placeholder="Ej: 36" /></div>
+          <div><label>Período</label><select id="pmt-period"><option>mensual</option><option>anual</option><option>otro</option></select></div>
+        </div>
+        <button id="btn-pmt">Calcular PMT</button>
+        <div class="result" id="pmt-result">Ingresá datos…</div>
+      </section>
+ 
+      <!-- Tipo de cambio -->
+      <section class="card">
+        <h2>Tipo de cambio</h2>
+        <small>Conversión ARS ↔ USD. Auto: BNA, MEP, CCL, Blue, Solidario, Tarjeta.</small>
+        <label>Monto</label><input id="tc-monto" type="number" placeholder="Ej: 10000" />
+        <div class="row">
+          <div><label>Dirección</label>
             <select id="tc-direccion">
-              <option value="ars-usd">ARS → USD (usará venta)</option>
-              <option value="usd-ars" selected>USD → ARS (usará compra)</option>
+              <option value="ars-usd">ARS → USD (usa venta)</option>
+              <option value="usd-ars" selected>USD → ARS (usa compra)</option>
             </select>
           </div>
-          <div>
-            <label for="tc-tipo">Tipo de cambio</label>
+          <div><label>Tipo</label>
             <select id="tc-tipo">
               <option value="oficial">Oficial (manual)</option>
-              <option value="bna-auto">Oficial (BNA auto)</option>
+              <option value="bna-auto">Oficial BNA (auto)</option>
               <option value="mep-auto">MEP (auto)</option>
               <option value="ccl-auto">CCL (auto)</option>
               <option value="blue-auto">Blue (auto)</option>
-              <option value="mayorista-auto">Mayorista (auto)</option>
               <option value="solidario-auto">Solidario (auto)</option>
               <option value="tarjeta-auto">Tarjeta (auto)</option>
-              <option value="cripto-auto">Cripto (auto)</option>
-              <option value="custom">Personalizado (manual)</option>
+              <option value="custom">Personalizado</option>
             </select>
           </div>
         </div>
-
-        <label for="tc-cotizacion">Cotización seleccionada (ARS por USD)</label>
-        <input id="tc-cotizacion" type="number" step="0.0001" inputmode="decimal" placeholder="Ej: 1475" />
-
-        <button id="btn-tc-auto" style="display:none">Traer cotización</button>
+        <label>Cotización (ARS/USD)</label><input id="tc-cotizacion" type="number" step="0.01" placeholder="Ej: 1475" />
+        <button id="btn-tc-auto" style="display:none">⬇ Traer cotización</button>
         <button id="btn-tc">Convertir</button>
-
-        <div class="result" id="tc-result">
-          Elegí tipo de cambio, traé (o ingresá) la cotización y convertí.
-        </div>
+        <div class="result" id="tc-result">Elegí tipo y convertí.</div>
       </section>
-
-      <!-- VAN y TIR -->
-      <section class="card" id="van-tir-card">
-        <h2>VAN y TIR (Flujos de caja)</h2>
-        <small>Ingresá una serie de flujos y la tasa de descuento. El primer flujo suele ser la inversión inicial (negativo).</small>
-        <label for="cf-tasa">Tasa de descuento por período (%)</label><input id="cf-tasa" type="number" step="0.0001" inputmode="decimal" placeholder="Ej: 2" />
-        <label for="cf-lista">Flujos de caja (separados por comas o líneas)</label>
-        <textarea id="cf-lista" placeholder="Ej: -100000, 30000, 35000, 40000, 45000"></textarea>
-        <button id="btn-van-tir">Calcular VAN y TIR</button>
-        <div class="result" id="van-tir-result">Ingresá tasa y flujos…</div>
-        <svg id="van-chart" class="chart" aria-label="VAN vs tasa"></svg>
-      </section>
-
-      <!-- Duración y Duration modificada -->
-      <section class="card" id="duration-card">
-        <h2>Duración y Duration modificada (bonos)</h2>
-        <small>Bonos a tasa fija. Calcula Duración de Macaulay, Duration modificada, DV01 y Convexidad.</small>
+    </div>
+  </div>
+ 
+  <!-- ===== TAB: BONOS ===== -->
+  <div class="tab-panel" id="tab-bonos">
+    <div class="cards">
+ 
+      <!-- Precio Limpio / Sucio / Interés Corrido -->
+      <section class="card">
+        <h2>🥇 Precio Limpio · Sucio · Interés Corrido</h2>
+        <small>Clean Price / Dirty Price / Accrued Interest. En Argentina los bonos cotizan a precio sucio.</small>
         <div class="row">
-          <div><label for="dur-face">Valor técnico / Face</label><input id="dur-face" type="number" inputmode="decimal" placeholder="Ej: 100" /></div>
-          <div><label for="dur-price">Precio (clean)</label><input id="dur-price" type="number" inputmode="decimal" placeholder="Ej: 95" /></div>
+          <div><label>Valor Residual (VR)</label><input id="cs-vr" type="number" placeholder="Ej: 100" /></div>
+          <div><label>Cupón anual (%)</label><input id="cs-coupon" type="number" step="0.01" placeholder="Ej: 8" /></div>
         </div>
         <div class="row">
-          <div><label for="dur-coupon">Cupón anual (%)</label><input id="dur-coupon" type="number" step="0.0001" inputmode="decimal" placeholder="Ej: 8" /></div>
-          <div><label for="dur-yield">YTM / TIR anual (%)</label><input id="dur-yield" type="number" step="0.0001" inputmode="decimal" placeholder="Ej: 10 (opcional si se estima desde precio)" /></div>
+          <div><label>Días transcurridos desde último cupón</label><input id="cs-dias-ac" type="number" placeholder="Ej: 90" /></div>
+          <div><label>Días del período de cupón</label><input id="cs-dias-periodo" type="number" placeholder="Ej: 180 (semestral)" /></div>
+        </div>
+        <label>Precio sucio de mercado (opcional)</label><input id="cs-dirty" type="number" step="0.01" placeholder="Ej: 102.5 — o dejá vacío" />
+        <button id="btn-cs">Calcular</button>
+        <div class="result" id="cs-result">Ingresá parámetros…</div>
+      </section>
+ 
+      <!-- Current Yield -->
+      <section class="card">
+        <h2>🥈 Current Yield & Relación con TIR</h2>
+        <small>Rendimiento corriente = Cupón anual / Precio. Incluye relación con Coupon Yield y TIR.</small>
+        <div class="row">
+          <div><label>Valor Nominal / Face</label><input id="cy-face" type="number" placeholder="Ej: 100" /></div>
+          <div><label>Precio (clean)</label><input id="cy-price" type="number" step="0.01" placeholder="Ej: 95" /></div>
         </div>
         <div class="row">
-          <div><label for="dur-years">Años al vencimiento</label><input id="dur-years" type="number" inputmode="decimal" placeholder="Ej: 5" /></div>
-          <div><label for="dur-freq">Frecuencia (pagos por año)</label><select id="dur-freq"><option value="1">1</option><option value="2">2</option><option value="4">4</option><option value="12">12</option></select></div>
+          <div><label>Cupón anual (%)</label><input id="cy-coupon" type="number" step="0.01" placeholder="Ej: 8" /></div>
+          <div><label>TIR / YTM anual (%, opcional)</label><input id="cy-ytm" type="number" step="0.01" placeholder="Se estima si vacío" /></div>
         </div>
-        <button id="btn-duration">Calcular duración</button>
-        <div class="result" id="duration-result">Ingresá parámetros del bono…</div>
+        <div class="row">
+          <div><label>Años al vencimiento</label><input id="cy-years" type="number" step="0.5" placeholder="Ej: 5" /></div>
+          <div><label>Pagos/año</label><select id="cy-freq"><option value="1">1</option><option value="2" selected>2</option><option value="4">4</option><option value="12">12</option></select></div>
+        </div>
+        <button id="btn-cy">Calcular</button>
+        <div class="result" id="cy-result">Ingresá parámetros…</div>
       </section>
-
-      <!-- Curva de bonos simple -->
-      <section class="card" id="curva-card">
-        <h2>Curva de bonos simple</h2>
-        <small>Cargá varios bonos (una línea por bono) y se grafica <span class="chip">Yield vs Duración</span>.</small>
-        <label for="curva-lines">Bonos (Ticker; Años; Cupón%; Precio; Yield%; Face)</label>
-        <textarea id="curva-lines" placeholder="Ej:
-AL30; 5; 5; 75; ; 100
+ 
+      <!-- TIR desde Precio -->
+      <section class="card">
+        <h2>TIR de un bono desde precio de mercado</h2>
+        <small>Calcula el YTM implícito en el precio. Bisección numérica (200 iter, precisión 1e-8).</small>
+        <div class="row">
+          <div><label>Valor Nominal / Face</label><input id="ytm-face" type="number" placeholder="Ej: 100" /></div>
+          <div><label>Precio de mercado</label><input id="ytm-price" type="number" step="0.01" placeholder="Ej: 92.5" /></div>
+        </div>
+        <div class="row">
+          <div><label>Cupón anual (%)</label><input id="ytm-coupon" type="number" step="0.01" placeholder="Ej: 5" /></div>
+          <div><label>Años al vencimiento</label><input id="ytm-years" type="number" step="0.5" placeholder="Ej: 4" /></div>
+        </div>
+        <div class="row">
+          <div><label>Pagos/año</label><select id="ytm-freq"><option value="1">1</option><option value="2" selected>2</option><option value="4">4</option><option value="12">12</option></select></div>
+          <div><label>Precio limpio o sucio</label><select id="ytm-ptype"><option value="clean">Limpio (clean)</option><option value="dirty">Sucio (dirty)</option></select></div>
+        </div>
+        <button id="btn-ytm">Calcular TIR / YTM</button>
+        <div class="result" id="ytm-result">Ingresá datos del bono…</div>
+      </section>
+ 
+      <!-- Precio teórico desde YTM -->
+      <section class="card">
+        <h2>Precio teórico de un bono</h2>
+        <small>Precio = Σ CF/(1+YTM/m)ᵗ + Face/(1+YTM/m)ⁿ. Calcula también paridad.</small>
+        <div class="row">
+          <div><label>Valor Nominal</label><input id="pb-face" type="number" placeholder="Ej: 100" /></div>
+          <div><label>YTM / TIR anual (%)</label><input id="pb-ytm" type="number" step="0.01" placeholder="Ej: 11" /></div>
+        </div>
+        <div class="row">
+          <div><label>Cupón anual (%)</label><input id="pb-coupon" type="number" step="0.01" placeholder="Ej: 8" /></div>
+          <div><label>Años al vencimiento</label><input id="pb-years" type="number" step="0.5" placeholder="Ej: 5" /></div>
+        </div>
+        <div class="row">
+          <div><label>Pagos/año</label><select id="pb-freq"><option value="1">1</option><option value="2" selected>2</option><option value="4">4</option><option value="12">12</option></select></div>
+        </div>
+        <button id="btn-pb">Calcular precio</button>
+        <div class="result" id="pb-result">Ingresá parámetros…</div>
+      </section>
+ 
+      <!-- Paridad -->
+      <section class="card">
+        <h2>Paridad de bonos</h2>
+        <small>Paridad = Precio / Valor Técnico × 100. Técnica incluye interés corrido.</small>
+        <div class="row">
+          <div><label>Valor Técnico / VT</label><input id="par-vt" type="number" placeholder="Ej: 101" /></div>
+          <div><label>Precio de mercado</label><input id="par-price" type="number" step="0.01" placeholder="Ej: 98" /></div>
+        </div>
+        <button id="btn-par">Calcular paridad</button>
+        <div class="result" id="par-result">Ingresá VT y precio…</div>
+      </section>
+ 
+    </div>
+  </div>
+ 
+  <!-- ===== TAB: SENSIBILIDAD & DURACIÓN ===== -->
+  <div class="tab-panel" id="tab-sensibilidad">
+    <div class="cards">
+ 
+      <!-- Duración completa + Sensibilidad -->
+      <section class="card">
+        <h2>📉 Duration, DV01, Convexidad & Sensibilidad</h2>
+        <small>Macaulay · Modified Duration · DV01 · Convexidad. Incluye variación de precio ante shocks de tasa.</small>
+        <div class="row">
+          <div><label>Valor Nominal / Face</label><input id="dur-face" type="number" placeholder="Ej: 100" /></div>
+          <div><label>Precio (clean)</label><input id="dur-price" type="number" step="0.01" placeholder="Ej: 95" /></div>
+        </div>
+        <div class="row">
+          <div><label>Cupón anual (%)</label><input id="dur-coupon" type="number" step="0.01" placeholder="Ej: 8" /></div>
+          <div><label>YTM / TIR anual (%) — opcional</label><input id="dur-yield" type="number" step="0.01" placeholder="Se estima desde precio" /></div>
+        </div>
+        <div class="row">
+          <div><label>Años al vencimiento</label><input id="dur-years" type="number" step="0.5" placeholder="Ej: 5" /></div>
+          <div><label>Pagos/año</label><select id="dur-freq"><option value="1">1</option><option value="2" selected>2</option><option value="4">4</option><option value="12">12</option></select></div>
+        </div>
+        <button id="btn-duration">Calcular Duration & Sensibilidad</button>
+        <div class="result" id="duration-result">Ingresá parámetros…</div>
+      </section>
+ 
+      <!-- Curva simple -->
+      <section class="card">
+        <h2>Curva de rendimientos (Yield Curve)</h2>
+        <small>Ingresá bonos — se grafica Yield vs Duración. Formato: Ticker; Años; Cupón%; Precio o Yield%; Face</small>
+        <textarea id="curva-lines" placeholder="AL30; 5; 5; 75; ; 100
 GD35; 10; 8; ; 14; 100
 TX26; 1.5; 0; 98; ; 100"></textarea>
         <button id="btn-curva">Generar curva</button>
         <div class="result" id="curva-result">Cargá bonos…</div>
         <svg id="curva-chart" class="chart"></svg>
       </section>
-
-      <!-- Paridad de bonos -->
-      <section class="card" id="paridad-card">
-        <h2>Cálculo de paridad de bonos</h2>
-        <small>Paridad (%) = Precio / Valor Técnico × 100. Si no ingresás TIR, se estima desde el precio.</small>
-        <div class="row">
-          <div><label for="par-face">Valor técnico / Face</label><input id="par-face" type="number" inputmode="decimal" placeholder="Ej: 100" /></div>
-          <div><label for="par-price">Precio (clean)</label><input id="par-price" type="number" inputmode="decimal" placeholder="Ej: 75" /></div>
-        </div>
-        <div class="row">
-          <div><label for="par-coupon">Cupón anual (%)</label><input id="par-coupon" type="number" step="0.0001" inputmode="decimal" placeholder="Ej: 5" /></div>
-          <div><label for="par-yield">TIR anual (%) (opcional)</label><input id="par-yield" type="number" step="0.0001" inputmode="decimal" placeholder="Si lo dejás vacío, se estima" /></div>
-        </div>
-        <div class="row">
-          <div><label for="par-years">Años al vencimiento</label><input id="par-years" type="number" inputmode="decimal" placeholder="Ej: 5" /></div>
-          <div><label for="par-freq">Frecuencia</label><select id="par-freq"><option value="1">1</option><option value="2">2</option><option value="4">4</option><option value="12">12</option></select></div>
-        </div>
-        <button id="btn-paridad">Calcular paridad</button>
-        <div class="result" id="paridad-result">Ingresá precio y valor técnico…</div>
-      </section>
-
-      <!-- FV / PV / PMT / Amortización -->
-      <section class="card" id="fv-card">
-        <h2>Valor Futuro (FV)</h2><small>¿Cuánto voy a tener al final si invierto hoy un monto a una tasa fija?</small>
-        <label for="fv-pv">Monto inicial (PV)</label><input id="fv-pv" type="number" inputmode="decimal" placeholder="Ej: 100000" />
-        <label for="fv-rate">Tasa por período (%)</label><input id="fv-rate" type="number" step="0.0001" inputmode="decimal" placeholder="Ej: 5" />
-        <div class="row"><div><label for="fv-n">Cantidad de períodos (n)</label><input id="fv-n" type="number" inputmode="numeric" placeholder="Ej: 12" /></div><div><label for="fv-period">Período</label><select id="fv-period"><option value="mensual">Mensual</option><option value="anual">Anual</option><option value="otro">Otro</option></select></div></div>
-        <button id="btn-fv">Calcular FV</button><div class="result" id="fv-result">Ingresá los datos…</div>
-      </section>
-
-      <section class="card" id="pv-card">
-        <h2>Valor Presente (PV)</h2><small>¿Cuánto necesito hoy para alcanzar un monto futuro deseado?</small>
-        <label for="pv-fv">Monto futuro (FV)</label><input id="pv-fv" type="number" inputmode="decimal" placeholder="Ej: 500000" />
-        <label for="pv-rate">Tasa por período (%)</label><input id="pv-rate" type="number" step="0.0001" inputmode="decimal" placeholder="Ej: 4" />
-        <div class="row"><div><label for="pv-n">Cantidad de períodos (n)</label><input id="pv-n" type="number" inputmode="numeric" placeholder="Ej: 24" /></div><div><label for="pv-period">Período</label><select id="pv-period"><option value="mensual">Mensual</option><option value="anual">Anual</option><option value="otro">Otro</option></select></div></div>
-        <button id="btn-pv">Calcular PV</button><div class="result" id="pv-result">Ingresá los datos…</div>
-      </section>
-
-      <section class="card" id="pmt-card">
-        <h2>Cuota (PMT)</h2><small>Préstamo o inversión con pagos iguales (sistema francés clásico).</small>
-        <label for="pmt-pv">Monto del préstamo / inversión (PV)</label><input id="pmt-pv" type="number" inputmode="decimal" placeholder="Ej: 300000" />
-        <label for="pmt-rate">Tasa por período (%)</label><input id="pmt-rate" type="number" step="0.0001" inputmode="decimal" placeholder="Ej: 6" />
-        <div class="row"><div><label for="pmt-n">Cantidad de períodos (n)</label><input id="pmt-n" type="number" inputmode="numeric" placeholder="Ej: 36" /></div><div><label for="pmt-period">Período</label><select id="pmt-period"><option value="mensual">Mensual</option><option value="anual">Anual</option><option value="otro">Otro</option></select></div></div>
-        <button id="btn-pmt">Calcular cuota</button><div class="result" id="pmt-result">Ingresá los datos…</div>
-      </section>
-
-      <section class="card" id="loan-card">
-        <h2>Créditos y tabla de amortización</h2><small>Generá el cuadro de cuotas según sistema Francés, Alemán o Americano.</small>
-        <label for="loan-amount">Monto del crédito</label><input id="loan-amount" type="number" inputmode="decimal" placeholder="Ej: 500000" />
-        <label for="loan-rate">Tasa por período (%)</label><input id="loan-rate" type="number" step="0.0001" inputmode="decimal" placeholder="Ej: 5" />
-        <div class="row"><div><label for="loan-n">Cantidad de períodos (n)</label><input id="loan-n" type="number" inputmode="numeric" placeholder="Ej: 24" /></div><div><label for="loan-system">Sistema</label><select id="loan-system"><option value="frances">Francés</option><option value="aleman">Alemán</option><option value="americano">Americano</option></select></div></div>
-        <button id="btn-loan">Generar tabla</button>
-        <div class="result" id="loan-result">Completá los datos…</div>
-        <div id="loan-table-wrapper" aria-live="polite"></div>
-      </section>
-    </div>
-
-    <div class="footer-note">
-      <span class="formula">FV = PV · (1 + i)<sup>n</sup></span>
-      <span class="formula">PV = FV / (1 + i)<sup>n</sup></span>
-      <span class="formula">PMT = PV · [ i / (1 - (1 + i)<sup>-n</sup> ) ]</span>
-      <span class="formula">TEA = (1 + TEM)<sup>12</sup> − 1 &nbsp; | &nbsp; TNA ≈ TEM · 12</span>
+ 
     </div>
   </div>
-
-  <!-- JS: namespaces / módulos y gestor de montaje en un solo archivo -->
-  <script type="module">
-    /* ========== Utilidades (Util) ========== */
-    const Util = (() => {
-      const $ = (sel) => sel.startsWith("#") ? document.querySelector(sel) : document.getElementById(sel);
-      const formatMoneyARS = (v) => isNaN(v) ? "-" : v.toLocaleString("es-AR", { style:"currency", currency:"ARS", maximumFractionDigits:2 });
-      const formatMoneyUSD = (v) => isNaN(v) ? "-" : v.toLocaleString("es-AR", { style:"currency", currency:"USD", maximumFractionDigits:2 });
-      const formatMoney = formatMoneyARS;
-      const formatPercent = (v) => isNaN(v) ? "-" : (v*100).toFixed(2) + "%";
-      const getNumber = (id, allowEmpty=false) => { const el=$(id); if(!el) return NaN; const raw=el.value; if(allowEmpty && raw==="") return NaN; return parseFloat(raw); };
-      const markError = (id) => { const el=$(id); if(!el) return; el.classList.add("input-error"); setTimeout(()=>el.classList.remove("input-error"),1500); };
-      const setResult = (node, html) => { if(node) node.innerHTML = html; };
-      const scrollToCard = (id) => { const el=document.getElementById(id); if(!el) return; el.scrollIntoView({behavior:"smooth", block:"start"}); el.classList.add("flash"); setTimeout(()=>el.classList.remove("flash"),1600); };
-      return { $, formatMoney, formatMoneyARS, formatMoneyUSD, formatPercent, getNumber, markError, setResult, scrollToCard };
-    })();
-
-    /* ========== Gestor de montaje/desmontaje de módulos (Dock) ========== */
-    const Dock = (() => {
-      const origins = new Map(); // cardId -> { parent, nextSibling }
-      const mountedAt = new Map(); // cardId -> containerEl
-
-      function ensureOrigin(cardEl) {
-        const id = cardEl.id;
-        if (!origins.has(id)) {
-          const parent = cardEl.parentElement;
-          const nextSibling = cardEl.nextElementSibling;
-          origins.set(id, { parent, nextSibling });
-        }
-      }
-
-      function mount(cardId, containerEl) {
-        const cardEl = document.getElementById(cardId);
-        if (!cardEl || !containerEl) return;
-        ensureOrigin(cardEl);
-
-        const currentContainer = mountedAt.get(cardId);
-        if (currentContainer && currentContainer !== containerEl) {
-          unmount(cardId);
-        }
-
-        if (containerEl.contains(cardEl)) {
-          unmount(cardId);
+ 
+  <!-- ===== TAB: CURVAS & FORWARD ===== -->
+  <div class="tab-panel" id="tab-curvas">
+    <div class="cards">
+ 
+      <!-- Bootstrapping spot -->
+      <section class="card">
+        <h2>🏅 Bootstrapping de tasas spot</h2>
+        <small>Obtiene la curva spot a partir de bonos de cupón. Ingresá una línea por período: Plazo(años); Precio; Cupón%; Pagos/año</small>
+        <textarea id="boot-lines" placeholder="0.5; 98.5; 0; 2
+1; 97; 0; 1
+1.5; 96; 5; 2
+2; 95; 6; 2"></textarea>
+        <button id="btn-boot">Bootstrapping</button>
+        <div class="result" id="boot-result">Ingresá bonos para calcular…</div>
+        <svg id="boot-chart" class="chart"></svg>
+      </section>
+ 
+      <!-- Forward rates -->
+      <section class="card">
+        <h2>🏅 Forward Rates implícitas</h2>
+        <small>Calcula la tasa forward entre dos períodos a partir de tasas spot. f(t1,t2) = [(1+s2)^t2 / (1+s1)^t1]^(1/(t2-t1)) − 1</small>
+        <div class="row">
+          <div><label>Tasa spot período 1 — s₁ (%)</label><input id="fw-s1" type="number" step="0.01" placeholder="Ej: 4" /></div>
+          <div><label>Plazo 1 (t₁ en años)</label><input id="fw-t1" type="number" step="0.5" placeholder="Ej: 0.5" /></div>
+        </div>
+        <div class="row">
+          <div><label>Tasa spot período 2 — s₂ (%)</label><input id="fw-s2" type="number" step="0.01" placeholder="Ej: 4.5" /></div>
+          <div><label>Plazo 2 (t₂ en años)</label><input id="fw-t2" type="number" step="0.5" placeholder="Ej: 1" /></div>
+        </div>
+        <button id="btn-fw">Calcular forward rate</button>
+        <div class="result" id="fw-result">Ingresá las tasas spot…</div>
+      </section>
+ 
+    </div>
+  </div>
+ 
+  <!-- ===== TAB: PROYECTOS & CRÉDITOS ===== -->
+  <div class="tab-panel" id="tab-proyectos">
+    <div class="cards">
+ 
+      <!-- VAN / TIR -->
+      <section class="card">
+        <h2>VAN y TIR — Proyectos</h2>
+        <small>El primer flujo suele ser la inversión inicial (negativo). Incluye ROI y Payback.</small>
+        <label>Tasa de descuento por período (%)</label><input id="cf-tasa" type="number" step="0.01" placeholder="Ej: 2" />
+        <label>Flujos de caja (separados por comas o líneas)</label>
+        <textarea id="cf-lista" placeholder="Ej: -100000, 30000, 35000, 40000, 45000"></textarea>
+        <button id="btn-van-tir">Calcular VAN y TIR</button>
+        <div class="result" id="van-tir-result">Ingresá tasa y flujos…</div>
+        <svg id="van-chart" class="chart"></svg>
+      </section>
+ 
+      <!-- Amortización -->
+      <section class="card">
+        <h2>Créditos — Tabla de amortización</h2>
+        <small>Sistemas Francés, Alemán y Americano.</small>
+        <label>Monto del crédito</label><input id="loan-amount" type="number" placeholder="Ej: 500000" />
+        <label>Tasa por período (%)</label><input id="loan-rate" type="number" step="0.01" placeholder="Ej: 5" />
+        <div class="row">
+          <div><label>n (períodos)</label><input id="loan-n" type="number" placeholder="Ej: 24" /></div>
+          <div><label>Sistema</label><select id="loan-system"><option value="frances">Francés</option><option value="aleman">Alemán</option><option value="americano">Americano</option></select></div>
+        </div>
+        <button id="btn-loan">Generar tabla</button>
+        <div class="result" id="loan-result">Completá los datos…</div>
+        <div id="loan-table-wrapper"></div>
+      </section>
+ 
+    </div>
+  </div>
+ 
+  <!-- ===== TAB: AHORRO & PF ===== -->
+  <div class="tab-panel" id="tab-ahorro">
+    <div class="cards">
+ 
+      <!-- Comparador PF vs UVA -->
+      <section class="card">
+        <h2>Comparador PF vs UVA</h2>
+        <small>Compará cuál rinde más en términos nominales y reales.</small>
+        <label>Monto</label><input id="pf-monto" type="number" placeholder="Ej: 100000" />
+        <div class="row">
+          <div><label>TNA PF tradicional (%)</label><input id="pf-tna" type="number" step="0.01" placeholder="Ej: 110" /></div>
+          <div><label>Inflación anual esperada (%)</label><input id="pf-inflacion" type="number" step="0.01" placeholder="Ej: 180" /></div>
+        </div>
+        <div class="row">
+          <div><label>Plus real UVA (% anual, opc.)</label><input id="pf-plus" type="number" step="0.01" placeholder="Ej: 0 ó 5" /></div>
+          <div><label>Plazo (días)</label><input id="pf-dias" type="number" placeholder="Ej: 30, 60, 90" /></div>
+        </div>
+        <button id="btn-pf-uva">Comparar</button>
+        <div class="result" id="pf-uva-result">Ingresá datos…</div>
+        <svg id="pf-uva-chart" class="chart"></svg>
+      </section>
+ 
+      <!-- Simulador aportes -->
+      <section class="card">
+        <h2>Simulador con aportes variables</h2>
+        <small>Capital inicial + aportes por período con interés compuesto.</small>
+        <label>Capital inicial (PV, opcional)</label><input id="sim-pv" type="number" placeholder="Ej: 50000" />
+        <label>Aporte fijo por período (opcional)</label><input id="sim-pmt" type="number" placeholder="Ej: 20000" />
+        <label>Aportes variables (comas o líneas, opcional)</label>
+        <textarea id="sim-aportes" placeholder="Ej: 20000, 0, 15000, 50000"></textarea>
+        <div class="row">
+          <div><label>Tasa por período (%)</label><input id="sim-rate" type="number" step="0.01" placeholder="Ej: 5" /></div>
+          <div><label>n (si no hay lista)</label><input id="sim-n" type="number" placeholder="Ej: 12" /></div>
+        </div>
+        <button id="btn-sim">Calcular</button>
+        <div class="result" id="sim-result">Cargá tasa y aportes…</div>
+        <svg id="sim-chart" class="chart"></svg>
+      </section>
+ 
+      <!-- Plan ahorro objetivos -->
+      <section class="card">
+        <h2>Plan de ahorro para objetivos</h2>
+        <small>¿Cuánto debo aportar por período para llegar a mi meta?</small>
+        <label>Objetivo (FV)</label><input id="obj-fv" type="number" placeholder="Ej: 1000000" />
+        <div class="row">
+          <div><label>Capital inicial (PV, opc.)</label><input id="obj-pv" type="number" placeholder="Ej: 50000" /></div>
+          <div><label>Tasa por período (%)</label><input id="obj-rate" type="number" step="0.01" placeholder="Ej: 4" /></div>
+        </div>
+        <label>n (períodos)</label><input id="obj-n" type="number" placeholder="Ej: 36" />
+        <button id="btn-obj">Calcular aporte necesario</button>
+        <div class="result" id="obj-result">Ingresá objetivo, tasa y n…</div>
+      </section>
+ 
+    </div>
+  </div>
+ 
+  <div class="footer-note">
+    Herramienta educativa · UADE Renta Fija · Mg. Mauro Natalucci
+  </div>
+</div>
+ 
+<script type="module">
+/* ===== UTIL ===== */
+const Util = (() => {
+  const $ = id => document.getElementById(id);
+  const fmt = (v, dec=2) => isNaN(v) ? "—" : v.toLocaleString("es-AR", {minimumFractionDigits:dec, maximumFractionDigits:dec});
+  const fmtPct = (v, dec=4) => isNaN(v) ? "—" : (v*100).toFixed(dec) + "%";
+  const fmtPctRaw = (v, dec=2) => isNaN(v) ? "—" : v.toFixed(dec) + "%";
+  const getN = (id, allowEmpty=false) => { const el=$(id); if(!el) return NaN; const r=el.value; if(allowEmpty && r==="") return NaN; return parseFloat(r); };
+  const markErr = id => { const el=$(id); if(!el) return; el.classList.add("input-error"); setTimeout(()=>el.classList.remove("input-error"),1500); };
+  const setR = (id, html) => { const el=$(id); if(el) el.innerHTML=html; };
+  const metric = (label, value) => `<div class="row-metric"><span class="metric-label">${label}</span><span class="metric-value">${value}</span></div>`;
+  return { $, fmt, fmtPct, fmtPctRaw, getN, markErr, setR, metric };
+})();
+ 
+/* ===== FINANCE CORE (shared, no side-effects) ===== */
+const F = (() => {
+  const fv = (pv, i, n) => pv * Math.pow(1+i, n);
+  const pv = (fvV, i, n) => fvV / Math.pow(1+i, n);
+  const pmt = (pvV, i, n) => i===0 ? pvV/n : (pvV*i)/(1-Math.pow(1+i,-n));
+  const npv = (r, cfs) => cfs.reduce((acc,cf,t)=>acc+cf/Math.pow(1+r,t), 0);
+ 
+  // Bond price: standard DCF
+  const bondPrice = ({face=100, couponPct=0, ytmPct, years, freq=2}) => {
+    const m=freq, n=Math.round(years*m), c=(couponPct/100)*face/m, y=ytmPct/100/m;
+    let p=0; for(let t=1;t<=n;t++) p+=c/Math.pow(1+y,t); p+=face/Math.pow(1+y,n); return p;
+  };
+ 
+  // Bond YTM from price — bisection
+  const bondYTM = ({face=100, price, couponPct=0, years, freq=2}) => {
+    const m=freq, n=Math.round(years*m), c=(couponPct/100)*face/m;
+    const ypv = yAn => { const y=yAn/m; let p=0; for(let t=1;t<=n;t++) p+=c/Math.pow(1+y,t); p+=face/Math.pow(1+y,n); return p; };
+    let a=0.000001, b=5.0;
+    let fa=ypv(a)-price, fb=ypv(b)-price;
+    if(fa*fb>0){ b=20; fb=ypv(b)-price; if(fa*fb>0) return NaN; }
+    for(let k=0;k<300;k++){
+      const mid=(a+b)/2, fm=ypv(mid)-price;
+      if(Math.abs(fm)<1e-9) return mid;
+      if(fa*fm<0){ b=mid; fb=fm; } else { a=mid; fa=fm; }
+    }
+    return (a+b)/2;
+  };
+ 
+  // Macaulay + Modified duration
+  const bondDuration = ({face=100, price, couponPct=0, ytmPct, years, freq=2}) => {
+    const m=freq, n=Math.round(years*m), c=(couponPct/100)*face/m, y=ytmPct/100/m;
+    let num=0, pvSum=0;
+    for(let t=1;t<=n;t++){
+      const cf=t<n?c:(c+face); const pvCF=cf/Math.pow(1+y,t);
+      pvSum+=pvCF; num+=(t/m)*pvCF;
+    }
+    const macaulay=pvSum===0?NaN:num/price;
+    const modified=macaulay/(1+y); // equivalent: macaulay/(1+ytmAnnual/m) when using period y
+    return {macaulay, modified};
+  };
+ 
+  // Convexity (annual)
+  const bondConvexity = ({face=100, price, couponPct=0, ytmPct, years, freq=2}) => {
+    const m=freq, n=Math.round(years*m), c=(couponPct/100)*face/m, y=ytmPct/100/m;
+    let sum=0;
+    for(let t=1;t<=n;t++){
+      const cf=t<n?c:(c+face);
+      sum+=cf*t*(t+1)/Math.pow(1+y,t+2);
+    }
+    return price>0 ? (sum/price)/(m*m) : NaN;
+  };
+ 
+  // IRR — grid + bisection
+  const irr = cfs => {
+    const npvFn = r => cfs.reduce((acc,cf,t)=>acc+cf/Math.pow(1+r,t),0);
+    const grid=[-0.9,-0.5,-0.2,-0.1,0,0.05,0.1,0.15,0.2,0.3,0.5,0.8,1.5,3,5,10];
+    let candidates=[];
+    for(let i=0;i<grid.length-1;i++){
+      const na=npvFn(grid[i]), nb=npvFn(grid[i+1]);
+      if(isFinite(na)&&isFinite(nb)&&na*nb<=0) candidates.push([grid[i],grid[i+1]]);
+    }
+    if(!candidates.length) return NaN;
+    let [a,b]=candidates[0], fa=npvFn(a);
+    for(let k=0;k<300;k++){
+      const mid=(a+b)/2, fm=npvFn(mid);
+      if(Math.abs(fm)<1e-9) return mid;
+      if(fa*fm<0){b=mid;} else {a=mid; fa=fm;}
+    }
+    return (a+b)/2;
+  };
+ 
+  const fvAportes = (list, i) => { const n=list.length; let t=0; for(let k=1;k<=n;k++) t+=(list[k-1]||0)*Math.pow(1+i,n-k); return t; };
+ 
+  return { fv, pv, pmt, npv, bondPrice, bondYTM, bondDuration, bondConvexity, irr, fvAportes };
+})();
+ 
+/* ===== SVG CHARTS ===== */
+function drawAxes(svg, pad=30, xLabel="", yLabel=""){
+  const w=svg.clientWidth||600, h=svg.clientHeight||220;
+  svg.innerHTML=`<rect x="0" y="0" width="${w}" height="${h}" fill="transparent"/>
+    <line x1="${pad}" y1="${h-pad}" x2="${w-pad}" y2="${h-pad}" stroke="#475569" stroke-width="1"/>
+    <line x1="${pad}" y1="${pad}" x2="${pad}" y2="${h-pad}" stroke="#475569" stroke-width="1"/>
+    <text x="${w-pad-30}" y="${h-pad+13}">${xLabel}</text>
+    <text x="${pad-20}" y="${pad-6}" transform="rotate(-90 ${pad-20},${pad-6})">${yLabel}</text>`;
+  return {w, h, pad};
+}
+const mkScale=(min,max,oMin,oMax)=>{const s=(max-min)||1; return v=>oMin+((v-min)/s)*(oMax-oMin);};
+function polyline(svg, pts, color="#38bdf8", sw=2){
+  if(pts.length<2) return;
+  const d="M"+pts.map(p=>p.join(",")).join("L");
+  const el=document.createElementNS("http://www.w3.org/2000/svg","path");
+  el.setAttribute("d",d); el.setAttribute("stroke",color); el.setAttribute("stroke-width",sw);
+  el.setAttribute("fill","none"); svg.appendChild(el);
+}
+function dot(svg, cx, cy, r=3.5, fill="#38bdf8"){
+  const c=document.createElementNS("http://www.w3.org/2000/svg","circle");
+  c.setAttribute("cx",cx); c.setAttribute("cy",cy); c.setAttribute("r",r); c.setAttribute("fill",fill); svg.appendChild(c);
+}
+function svgText(svg, x, y, txt, anchor="middle"){
+  const el=document.createElementNS("http://www.w3.org/2000/svg","text");
+  el.setAttribute("x",x); el.setAttribute("y",y); el.setAttribute("text-anchor",anchor); el.textContent=txt; svg.appendChild(el);
+}
+ 
+/* ===== TAB ROUTING ===== */
+document.querySelectorAll(".tab-btn").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
+    document.querySelectorAll(".tab-panel").forEach(p=>p.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById("tab-"+btn.dataset.tab)?.classList.add("active");
+  });
+});
+ 
+/* ===== THEME ===== */
+document.getElementById("theme-toggle")?.addEventListener("click",()=>document.body.classList.toggle("light"));
+ 
+/* ===== CONVERSOR TASAS (mejorado: incluye TES) ===== */
+document.getElementById("btn-rate-convert")?.addEventListener("click",()=>{
+  const type=Util.$("rate-type").value, r=Util.getN("rate-input"), freq=parseInt(Util.$("rate-freq").value)||12;
+  if(isNaN(r)){ Util.markErr("rate-input"); return Util.setR("rate-result","👀 Ingresá una tasa."); }
+  const rD=r/100; let tem, tea, tna, tes;
+  if(type==="tna"){ tna=rD; tem=tna/freq; tea=Math.pow(1+tem,freq)-1; tes=Math.pow(1+tea,0.5)-1; }
+  else if(type==="tea"){ tea=rD; tem=Math.pow(1+tea,1/12)-1; tna=tem*12; tes=Math.pow(1+tea,0.5)-1; }
+  else if(type==="tem"){ tem=rD; tea=Math.pow(1+tem,12)-1; tna=tem*freq; tes=Math.pow(1+tea,0.5)-1; }
+  else { tes=rD; tea=Math.pow(1+tes,2)-1; tem=Math.pow(1+tea,1/12)-1; tna=tem*12; }
+  Util.setR("rate-result",
+    `<strong>Conversión de tasas</strong>` +
+    Util.metric("TNA (Nominal Anual)", Util.fmtPctRaw(tna*100,4)+"%") +
+    Util.metric("TEA (Efectiva Anual)", Util.fmtPctRaw(tea*100,4)+"%") +
+    Util.metric("TEM (Efectiva Mensual)", Util.fmtPctRaw(tem*100,4)+"%") +
+    Util.metric("TES (Efectiva Semestral)", Util.fmtPctRaw(tes*100,4)+"%") +
+    `<span style="font-size:.8rem;color:var(--muted)">Cap. ${freq} per./año para TNA</span>`
+  );
+});
+ 
+/* ===== FV ===== */
+document.getElementById("btn-fv")?.addEventListener("click",()=>{
+  const pv=Util.getN("fv-pv"), i=Util.getN("fv-rate")/100, n=Util.getN("fv-n");
+  if([pv,i*100,n].some(isNaN)){ ["fv-pv","fv-rate","fv-n"].forEach(Util.markErr); return Util.setR("fv-result","👀 Completá todos los campos."); }
+  const fvVal=F.fv(pv,i,n);
+  Util.setR("fv-result",`<strong>Valor Futuro: $${Util.fmt(fvVal)}</strong>`+Util.metric("PV",`$${Util.fmt(pv)}`)+Util.metric("Ganancia",`$${Util.fmt(fvVal-pv)}`)+Util.metric("Rendimiento total",Util.fmtPctRaw(((fvVal-pv)/pv)*100,2)+"%"));
+});
+ 
+/* ===== PV ===== */
+document.getElementById("btn-pv")?.addEventListener("click",()=>{
+  const fvV=Util.getN("pv-fv"), i=Util.getN("pv-rate")/100, n=Util.getN("pv-n");
+  if([fvV,i*100,n].some(isNaN)){ ["pv-fv","pv-rate","pv-n"].forEach(Util.markErr); return Util.setR("pv-result","👀 Completá todos los campos."); }
+  const pvV=F.pv(fvV,i,n);
+  Util.setR("pv-result",`<strong>Valor Presente: $${Util.fmt(pvV)}</strong>`+Util.metric("FV",`$${Util.fmt(fvV)}`)+Util.metric("Descuento",(fvV-pvV).toLocaleString("es-AR",{style:"currency",currency:"ARS"})));
+});
+ 
+/* ===== PMT ===== */
+document.getElementById("btn-pmt")?.addEventListener("click",()=>{
+  const pvV=Util.getN("pmt-pv"), i=Util.getN("pmt-rate")/100, n=Util.getN("pmt-n");
+  if([pvV,i*100,n].some(isNaN)){ ["pmt-pv","pmt-rate","pmt-n"].forEach(Util.markErr); return Util.setR("pmt-result","👀 Completá todos los campos."); }
+  const pmtV=F.pmt(pvV,i,n), total=pmtV*n;
+  Util.setR("pmt-result",`<strong>Cuota: $${Util.fmt(pmtV)}</strong>`+Util.metric("Total pagado",`$${Util.fmt(total)}`)+Util.metric("Intereses totales",`$${Util.fmt(total-pvV)}`)+Util.metric("Costo financiero",Util.fmtPctRaw(((total-pvV)/pvV)*100,2)+"%"));
+});
+ 
+/* ===== TIPO DE CAMBIO ===== */
+(function wireTipoCambio(){
+  const tipoSel=Util.$("tc-tipo"), btnAuto=Util.$("btn-tc-auto"), cotizEl=Util.$("tc-cotizacion"), result=Util.$("tc-result"), dirSel=Util.$("tc-direccion");
+  if(!tipoSel||!btnAuto) return;
+  const isAuto=v=>v&&v.endsWith("-auto");
+  tipoSel.addEventListener("change",()=>{ btnAuto.style.display=isAuto(tipoSel.value)?"block":"none"; if(isAuto(tipoSel.value)) cotizEl.value=""; });
+ 
+  async function fetchCotiz(){
+    const tipo=tipoSel.value, dir=dirSel.value;
+    result.innerHTML="⏳ Consultando…";
+    const slugDA={mep:"mep",ccl:"ccl",blue:"blue",solidario:"solidario",tarjeta:"tarjeta"};
+    const slugAD={mep:"bolsa",ccl:"contadoconliqui",blue:"blue",solidario:"solidario",tarjeta:"turista"};
+    const today=new Date(); const y=today.getFullYear(), m=String(today.getMonth()+1).padStart(2,"0"), d=String(today.getDate()).padStart(2,"0");
+    let urls=[];
+    if(tipo==="bna-auto") urls=[`https://dolarapi.com/v1/dolares/oficial`,`https://api.argentinadatos.com/v1/cotizaciones/dolares/oficial/${y}/${m}/${d}`];
+    else{ const k=tipo.replace("-auto",""); if(slugDA[k]) urls.push(`https://dolarapi.com/v1/dolares/${slugDA[k]}`); if(slugAD[k]) urls.push(`https://api.argentinadatos.com/v1/cotizaciones/dolares/${slugAD[k]}/${y}/${m}/${d}`); }
+    for(const url of urls){
+      try{
+        const r=await fetch(url); if(!r.ok) continue;
+        const data=await r.json(); const compra=Number(data?.compra), venta=Number(data?.venta);
+        if(isFinite(venta)&&isFinite(compra)&&venta>0){
+          const usar=dir==="usd-ars"?compra:venta;
+          cotizEl.value=usar;
+          result.innerHTML=`Compra ${Util.fmt(compra)} | Venta ${Util.fmt(venta)} ARS/USD<br><span style="font-size:.8rem;color:var(--muted)">Usando ${dir==="usd-ars"?"compra":"venta"}</span>`;
           return;
         }
-
-        containerEl.appendChild(cardEl);
-        mountedAt.set(cardId, containerEl);
-        const panel = containerEl.closest(".index-detail");
-        const panelBtn = panel ? document.querySelector(`[data-panel="${panel.id}"]`) : null;
-        if (panel && panelBtn) {
-          panel.removeAttribute("hidden");
-          panelBtn.setAttribute("aria-expanded", "true");
-        }
-      }
-
-      function unmount(cardId) {
-        const cardEl = document.getElementById(cardId);
-        if (!cardEl) return;
-        const origin = origins.get(cardId);
-        if (!origin) return;
-
-        const { parent, nextSibling } = origin;
-        if (nextSibling && nextSibling.parentElement === parent) {
-          parent.insertBefore(cardEl, nextSibling);
-        } else {
-          parent.appendChild(cardEl);
-        }
-        mountedAt.delete(cardId);
-      }
-
-      return { mount, unmount };
-    })();
-
-    /* ========== Núcleo financiero (Finance) ========== */
-    const Finance = (() => {
-      const fv = (pv, i, n) => pv * Math.pow(1+i, n);
-      const pv = (fvVal, i, n) => fvVal / Math.pow(1+i, n);
-      const pmt = (pvVal, i, n) => i===0 ? pvVal/n : (pvVal*i)/(1 - Math.pow(1+i, -n));
-      const fvAportesVariables = (aportes, i) => { const n=aportes.length; let total=0; for(let t=1;t<=n;t++) total += (aportes[t-1]||0) * Math.pow(1+i, n-t); return total; };
-      const npv = (rate, cfs) => cfs.reduce((acc, cf, t) => acc + cf / Math.pow(1+rate, t), 0);
-      const irr = (cfs) => {
-        const signChanges = cfs.reduce((acc, cf, idx, arr) => idx===0 ? acc : acc + ((cf===0 || arr[idx-1]===0) ? 0 : (Math.sign(cf) !== Math.sign(arr[idx-1]) ? 1 : 0)), 0);
-        const warnMultipleIRR = signChanges > 1;
-        const candidates = [];
-        const grid = [ -0.9, -0.5, -0.2, -0.1, 0, 0.05, 0.1, 0.2, 0.4, 0.8, 1.5, 3, 5, 10 ];
-        for (let i=0;i<grid.length-1;i++){ const a=grid[i], b=grid[i+1]; const na=npv(a,cfs), nb=npv(b,cfs); if(isFinite(na)&&isFinite(nb)&&na*nb<=0) candidates.push([a,b]); }
-        if (!candidates.length) return { irr: NaN, warnMultipleIRR };
-        let [a,b] = candidates[0]; let fa=npv(a,cfs), fb=npv(b,cfs);
-        if (fa===0) return { irr:a, warnMultipleIRR };
-        if (fb===0) return { irr:b, warnMultipleIRR };
-        for (let iter=0; iter<200; iter++) {
-          const m=(a+b)/2; const fm=npv(m,cfs);
-          if (Math.abs(fm) < 1e-8) return { irr:m, warnMultipleIRR };
-          if (fa*fm < 0) { b=m; fb=fm; } else { a=m; fa=fm; }
-        }
-        return { irr:(a+b)/2, warnMultipleIRR };
-      };
-      const bondPrice = ({ face=100, couponPct=0, ytmPct=0, years=1, freq=2 }) => {
-        const m=freq, n=Math.round(years*m), c=(couponPct/100)*face/m, y=ytmPct/100/m; let price=0;
-        for(let t=1;t<=n;t++) price += c / Math.pow(1+y, t); price += face / Math.pow(1+y, n); return price;
-      };
-      const bondYieldFromPrice = ({ face=100, price, couponPct=0, years=1, freq=2 }) => {
-        const m=freq, n=Math.round(years*m), c=(couponPct/100)*face/m;
-        let a=0.000001, b=5.0;
-        const ypv=(yAn)=>{ const y=yAn/m; let p=0; for(let t=1;t<=n;t++) p += c / Math.pow(1+y, t); p += face / Math.pow(1+y, n); return p; };
-        let fa=ypv(a)-price, fb=ypv(b)-price;
-        if (fa*fb>0){ b=20.0; fb=ypv(b)-price; if(fa*fb>0) return NaN; }
-        for(let iter=0;iter<200;iter++){ const mAn=(a+b)/2; const fm=ypv(mAn)-price; if(Math.abs(fm)<1e-8) return mAn; if(fa*fm<0){ b=mAn; fb=fm; } else { a=mAn; fa=fm; } }
-        return (a+b)/2;
-      };
-      const bondDuration = ({ face=100, price, couponPct=0, ytmPct=0, years=1, freq=2 }) => {
-        const m=freq, n=Math.round(years*m), c=(couponPct/100)*face/m, y=ytmPct/100/m;
-        let durNum=0, pvSum=0;
-        for(let t=1;t<=n;t++){ const cf=t<n ? c : (c+face); const pv = cf / Math.pow(1+y, t); pvSum += pv; durNum += (t/m)*pv; }
-        const macaulay = pvSum===0 ? NaN : (durNum / price);
-        const modified = macaulay / (1 + y);
-        return { macaulay, modified };
-      };
-      const bondConvexityAnnual = ({ face=100, price, couponPct=0, ytmPct=0, years=1, freq=2 }) => {
-        const m=freq, n=Math.round(years*m), c=(couponPct/100)*face/m, y=ytmPct/100/m;
-        let sum = 0;
-        for (let t=1; t<=n; t++) {
-          const cf = (t<n) ? c : (c + face);
-          sum += (cf * t * (t+1)) / Math.pow(1+y, t+2);
-        }
-        const convexityPerPeriod = price ? (sum / price) : NaN;
-        const convexityAnnual = isNaN(convexityPerPeriod) ? NaN : (convexityPerPeriod / (m*m));
-        return convexityAnnual;
-      };
-      const dv01FromModified = (modified, price) => (isNaN(modified) || isNaN(price)) ? NaN : (modified * price * 0.0001);
-
-      return { fv, pv, pmt, fvAportesVariables, npv, irr, bondPrice, bondYieldFromPrice, bondDuration, bondConvexityAnnual, dv01FromModified };
-    })();
-
-    /* ========== PF vs UVA ========== */
-    const PFUVA = (() => {
-      function comparar({ monto, tnaPF, inflacion, plus, dias }) {
-        const tnaPFDecimal=tnaPF/100, inflAnualDec=inflacion/100, plusRealDec=plus/100;
-        const interesPF=tnaPFDecimal*(dias/365), montoPF=monto*(1+interesPF);
-        const inflPeriodo=Math.pow(1+inflAnualDec, dias/365)-1;
-        const tasaUVAAnual=(1+inflAnualDec)*(1+plusRealDec)-1;
-        const tasaUVAPeriodo=Math.pow(1+tasaUVAAnual, dias/365)-1;
-        const montoUVA=monto*(1+tasaUVAPeriodo);
-        const factorInfl=1+inflPeriodo, realPF=montoPF/factorInfl, realUVA=montoUVA/factorInfl;
-        return { montoPF, montoUVA, inflPeriodo, realPF, realUVA };
-      }
-      function render(out, resultDiv, dias) {
-        const { formatMoney } = Util;
-        const { montoPF, montoUVA, inflPeriodo, realPF, realUVA } = out;
-        const gn = montoPF>montoUVA ? "Plazo Fijo tradicional gana en términos nominales." : (montoUVA>montoPF ? "El Plazo Fijo UVA gana en términos nominales." : "Empate nominal (según supuestos).");
-        const gr = realPF>realUVA ? "Plazo Fijo tradicional gana en términos reales." : (realUVA>realPF ? "El Plazo Fijo UVA gana en términos reales." : "Empate real (según supuestos).");
-        resultDiv.innerHTML =
-          `<strong>Comparación PF tradicional vs UVA (${dias} días):</strong>
-           <br>PF tradicional: ${formatMoney(montoPF)}
-           <br>PF UVA (estimado): ${formatMoney(montoUVA)}
-           <br><br><strong>Inflación del período (${(inflPeriodo*100).toFixed(2)}%):</strong>
-           <br>PF (real): ${formatMoney(realPF)} | UVA (real): ${formatMoney(realUVA)}
-           <br><br><span style='font-size:0.85rem;color:#9ca3af'>${gn}<br>${gr}<br>Supuesto: inflación y TNA constantes.</span>`;
-      }
-      return { comparar, render };
-    })();
-
-    /* ========== Conversor de tasas ========== */
-    const Tasas = (() => {
-      function convertir(type, ratePercent) {
-        const r=ratePercent/100; let tem, tea, tna;
-        if(type==="tna"){ tna=r; tem=tna/12; tea=Math.pow(1+tem,12)-1; }
-        else if(type==="tea"){ tea=r; tem=Math.pow(1+tea,1/12)-1; tna=tem*12; }
-        else { tem=r; tea=Math.pow(1+tem,12)-1; tna=tem*12; }
-        return { tem, tea, tna };
-      }
-      return { convertir };
-    })();
-
-    /* ========== Simulador (aportes variables) ========== */
-    const Simulador = (() => {
-      const parseAportes = (raw) => (!raw || !raw.trim()) ? [] :
-        raw.split(/[\n,;]+/g).map(s=>parseFloat(s.trim())).filter(v=>!isNaN(v));
-      function calcular({ pvInicial, aporteFijo, aportesVars, ratePercent, n }) {
-        const i=ratePercent/100;
-        let lista=parseAportes(aportesVars), nFinal=n;
-        if(lista.length>0) nFinal=lista.length; else lista=Array.from({length:nFinal}, ()=>aporteFijo||0);
-        const fvInicial=pvInicial>0 ? Finance.fv(pvInicial, i, nFinal) : 0;
-        const fvAportes=i===0 ? lista.reduce((a,v)=>a+v,0) : Finance.fvAportesVariables(lista, i);
-        const fvTotal=fvInicial+fvAportes;
-        const totalAportado=(pvInicial||0)+lista.reduce((a,v)=>a+v,0);
-        return { fvTotal, totalAportado, nFinal, i, usóVariables: (lista.length>0 && aportesVars?.trim()?.length>0) };
-      }
-      function render(out, node, period, ratePercent) {
-        node.innerHTML =
-          `<strong>Valor futuro estimado:</strong>${Util.formatMoney(out.fvTotal)}
-           <br><span style='font-size:0.85rem;color:#9ca3af'>Período ${period}, tasa ${ratePercent}%, ${out.nFinal} período(s). ${out.usóVariables ? "Aportes variables" : "Aporte fijo"}.</span>
-           <br><span style='font-size:0.85rem;color:#9ca3af'>Total aportado: ${Util.formatMoney(out.totalAportado)} (PV + aportes)</span>`;
-      }
-      return { calcular, render };
-    })();
-
-    /* ========== Objetivos (aporte necesario) ========== */
-    const Objetivos = (() => {
-      function calcularPMTObjetivo({ fvObj, pvInicial, ratePercent, n }) {
-        const i=ratePercent/100; if(n<=0) return { pmtNecesario: NaN };
-        const fvInicial=pvInicial>0 ? Finance.fv(pvInicial, i, n) : 0;
-        if(i===0) return { pmtNecesario: (fvObj - fvInicial)/n };
-        const pmt=((fvObj - fvInicial)*i)/(Math.pow(1+i, n) - 1);
-        return { pmtNecesario: pmt };
-      }
-      function render({ pmtNecesario }, node, period, ratePercent, n) {
-        node.innerHTML =
-          `<strong>Aporte por período necesario:</strong>${Util.formatMoney(pmtNecesario)}
-           <br><span style='font-size:0.85rem;color:#9ca3af'>${n} período(s), capitalización ${period}, tasa ${ratePercent}%.</span>`;
-      }
-      return { calcularPMTObjetivo, render };
-    })();
-
-    /* ========== Tipo de cambio (multi auto) ========== */
-    const TipoCambio = (() => {
-      function convertir({ monto, direccion, cotizacion }) {
-        if (direccion==="ars-usd") return { origen:"ARS", destino:"USD", result: cotizacion>0 ? (monto/cotizacion) : NaN };
-        return { origen:"USD", destino:"ARS", result: cotizacion>0 ? (monto*cotizacion) : NaN };
-      }
-      function render({ origen, destino, result }, node) {
-        const fmt = destino==="USD" ? Util.formatMoneyUSD : Util.formatMoneyARS;
-        node.innerHTML = `<strong>Conversión ${origen} → ${destino}:</strong>${fmt(result)}<br><span style='font-size:0.85rem;color:#9ca3af'>Según cotización.</span>`;
-      }
-      return { convertir, render };
-    })();
-
-    /* === Fetch BNA oficial (venta/compra) === */
-    async function fetchBNAOficialHoy() {
-      const today = new Date();
-      const yyyy = today.getFullYear();
-      const mm = String(today.getMonth() + 1).padStart(2, "0");
-      const dd = String(today.getDate()).padStart(2, "0");
-
-      const urls = [
-        `https://api.argentinadatos.com/v1/cotizaciones/dolares/oficial/${yyyy}/${mm}/${dd}`,  // ArgentinaDatos  [1](https://argentinadatos.com/docs/operations/get-cotizaciones-dolares-casa-fecha.html)
-        `https://dolarapi.com/v1/dolares/oficial`                                               // DolarApi       [2](https://dolarapi.com/docs/argentina/operations/get-dolar-oficial)
-      ];
-
-      for (const url of urls) {
-        try {
-          const r = await fetch(url, { method: "GET" });
-          if (!r.ok) continue;
-          const data = await r.json();
-          const compra = Number(data?.compra);
-          const venta  = Number(data?.venta);
-          if (isFinite(venta) && isFinite(compra)) {
-            return { compra, venta, source: url };
-          }
-        } catch {}
-      }
-      return null;
+      }catch{}
     }
-
-    /* === Fetch genérico para tipos: mep, ccl, blue, mayorista, solidario, tarjeta, cripto === */
-    async function fetchTipoCambioAuto(kind) {
-      // Mapeo slugs
-      const slugDolarApi = {
-        mep: "mep",
-        ccl: "ccl",
-        blue: "blue",
-        mayorista: "mayorista",
-        solidario: "solidario",
-        tarjeta: "tarjeta",
-        cripto: "cripto" // puede no estar en DolarApi; fallback a ArgentinaDatos
-      };
-      const slugArgentinaDatos = {
-        mep: "bolsa",
-        ccl: "contadoconliqui",
-        blue: "blue",
-        mayorista: "mayorista",
-        solidario: "solidario",
-        tarjeta: "turista",
-        cripto: "cripto"
-      };
-
-      // Primero DolarApi, luego ArgentinaDatos por fecha
-      const today = new Date();
-      const yyyy = today.getFullYear();
-      const mm = String(today.getMonth() + 1).padStart(2, "0");
-      const dd = String(today.getDate()).padStart(2, "0");
-
-      const urls = [];
-      if (slugDolarApi[kind]) urls.push(`https://dolarapi.com/v1/dolares/${slugDolarApi[kind]}`); // [3](https://dolarapi.com/docs/argentina/)
-      if (slugArgentinaDatos[kind]) urls.push(`https://api.argentinadatos.com/v1/cotizaciones/dolares/${slugArgentinaDatos[kind]}/${yyyy}/${mm}/${dd}`); // [1](https://argentinadatos.com/docs/operations/get-cotizaciones-dolares-casa-fecha.html)
-
-      for (const url of urls) {
-        try {
-          const r = await fetch(url, { method: "GET" });
-          if (!r.ok) continue;
-          const data = await r.json();
-          const compra = Number(data?.compra);
-          const venta  = Number(data?.venta);
-          if (isFinite(venta) && isFinite(compra) && venta > 0) {
-            return { compra, venta, source: url };
-          }
-        } catch {}
-      }
-      return null;
+    result.innerHTML="⚠️ No se pudo obtener cotización automática. Ingresá manualmente.";
+  }
+ 
+  btnAuto.addEventListener("click",fetchCotiz);
+  Util.$("btn-tc")?.addEventListener("click",async()=>{
+    const monto=Util.getN("tc-monto"), dir=dirSel.value;
+    if(isNaN(monto)){ Util.markErr("tc-monto"); return result.innerHTML="👀 Ingresá un monto."; }
+    if(isAuto(tipoSel.value)&&!cotizEl.value) await fetchCotiz();
+    const cotiz=parseFloat(cotizEl.value);
+    if(isNaN(cotiz)||cotiz<=0){ Util.markErr("tc-cotizacion"); return result.innerHTML="👀 Ingresá una cotización válida."; }
+    const res=dir==="ars-usd"?monto/cotiz:monto*cotiz;
+    const [de,a]=dir==="ars-usd"?["ARS","USD"]:["USD","ARS"];
+    Util.setR("tc-result",`<strong>${Util.fmt(monto)} ${de} = ${Util.fmt(res,4)} ${a}</strong>` + Util.metric("Cotización usada",`$${Util.fmt(cotiz)} ARS/USD`));
+  });
+})();
+ 
+/* ===== CLEAN/DIRTY / ACCRUED INTEREST ===== */
+document.getElementById("btn-cs")?.addEventListener("click",()=>{
+  const vr=Util.getN("cs-vr"), coupon=Util.getN("cs-coupon"), diasAC=Util.getN("cs-dias-ac"), diasPer=Util.getN("cs-dias-periodo");
+  const dirtyInput=Util.getN("cs-dirty",true);
+  const inv=[]; if(isNaN(vr)) inv.push("cs-vr"); if(isNaN(coupon)) inv.push("cs-coupon"); if(isNaN(diasAC)) inv.push("cs-dias-ac"); if(isNaN(diasPer)||diasPer<=0) inv.push("cs-dias-periodo");
+  if(inv.length){ inv.forEach(Util.markErr); return Util.setR("cs-result","👀 Completá todos los campos."); }
+  // Interés Corrido = VR × (cupón anual/100) × (días transcurridos / días del período)
+  // Simplificación estándar académica ARG: cupón anual × (días / 365)
+  const cuponAnual=(coupon/100)*vr;
+  const intCorrido=cuponAnual*(diasAC/diasPer); // proporcional al período
+  const vt=vr+intCorrido; // Valor Técnico
+  let cleanPrice=NaN, dirtyPrice=NaN;
+  if(!isNaN(dirtyInput)&&dirtyInput>0){ dirtyPrice=dirtyInput; cleanPrice=dirtyPrice-intCorrido; }
+  const rel=isNaN(cleanPrice)?"":"<br>"+Util.metric("Precio limpio (clean)",`$${Util.fmt(cleanPrice)}`)+Util.metric("Precio sucio (dirty)",`$${Util.fmt(dirtyPrice)}`)+Util.metric("Paridad técnica",Util.fmtPctRaw((dirtyPrice/vt)*100)+"%");
+  Util.setR("cs-result",
+    `<strong>Interés corrido y Valor Técnico</strong>`+
+    Util.metric("Interés corrido (AC)",`$${Util.fmt(intCorrido)}`)+
+    Util.metric("Valor Técnico (VT = VR + AC)",`$${Util.fmt(vt)}`)+
+    `<span style="font-size:.8rem;color:var(--muted)">IC = VR × C% × (diasAC / diasPer)</span>`+rel
+  );
+});
+ 
+/* ===== CURRENT YIELD ===== */
+document.getElementById("btn-cy")?.addEventListener("click",()=>{
+  const face=Util.getN("cy-face"), price=Util.getN("cy-price"), coupon=Util.getN("cy-coupon");
+  const ytmInput=Util.getN("cy-ytm",true), years=Util.getN("cy-years"), freq=parseInt(Util.$("cy-freq").value)||2;
+  const inv=[]; if(isNaN(face)) inv.push("cy-face"); if(isNaN(price)||price<=0) inv.push("cy-price"); if(isNaN(coupon)) inv.push("cy-coupon"); if(isNaN(years)||years<=0) inv.push("cy-years");
+  if(inv.length){ inv.forEach(Util.markErr); return Util.setR("cy-result","👀 Completá face, precio, cupón y años."); }
+  const couponAnual=(coupon/100)*face;
+  const currentYield=couponAnual/price; // Current Yield = Cupón anual / Precio
+  const couponYield=coupon/100;          // Coupon Yield = Cupón / Face
+  let ytm=ytmInput; if(isNaN(ytm)||ytm<=0) ytm=F.bondYTM({face, price, couponPct:coupon, years, freq});
+  let relacion="";
+  if(!isNaN(ytm)){
+    if(Math.abs(currentYield-ytm/100)<0.0005) relacion="≈ par: Coupon yield ≈ Current yield ≈ TIR";
+    else if(price<face) relacion="Bajo la par: Coupon yield &lt; Current yield &lt; TIR";
+    else relacion="Sobre la par: Coupon yield &gt; Current yield &gt; TIR";
+  }
+  Util.setR("cy-result",
+    `<strong>Medidas de rendimiento</strong>`+
+    Util.metric("Coupon Yield (Tasa de cupón)",Util.fmtPctRaw(couponYield*100,4)+"%")+
+    Util.metric("Current Yield (Rendimiento corriente)",Util.fmtPctRaw(currentYield*100,4)+"%")+
+    (!isNaN(ytm)?Util.metric("TIR / YTM",Util.fmtPctRaw(ytm,4)+"%"):"")+
+    `<span class="ok" style="font-size:.85rem">${relacion}</span>`
+  );
+});
+ 
+/* ===== TIR DESDE PRECIO ===== */
+document.getElementById("btn-ytm")?.addEventListener("click",()=>{
+  const face=Util.getN("ytm-face"), price=Util.getN("ytm-price"), coupon=Util.getN("ytm-coupon"), years=Util.getN("ytm-years");
+  const freq=parseInt(Util.$("ytm-freq").value)||2;
+  const inv=[]; if(isNaN(face)||face<=0) inv.push("ytm-face"); if(isNaN(price)||price<=0) inv.push("ytm-price"); if(isNaN(coupon)) inv.push("ytm-coupon"); if(isNaN(years)||years<=0) inv.push("ytm-years");
+  if(inv.length){ inv.forEach(Util.markErr); return Util.setR("ytm-result","👀 Completá face, precio, cupón y años."); }
+  const ytm=F.bondYTM({face, price, couponPct:coupon, years, freq});
+  if(isNaN(ytm)) return Util.setR("ytm-result","⚠️ No se pudo converger. Revisá los datos.");
+  const ytmSem=freq===2?Math.pow(1+ytm,0.5)-1:NaN;
+  const precioT=F.bondPrice({face, couponPct:coupon, ytmPct:ytm, years, freq});
+  Util.setR("ytm-result",
+    `<strong>TIR / YTM del bono</strong>`+
+    Util.metric("YTM anual",Util.fmtPctRaw(ytm,4)+"%")+
+    (!isNaN(ytmSem)?Util.metric("YTM semestral equiv.",Util.fmtPctRaw(ytmSem*100,4)+"%"):"")+
+    Util.metric("Precio teórico (verif.)",`$${Util.fmt(precioT)}`)+
+    Util.metric("Precio ingresado",`$${Util.fmt(price)}`)+
+    `<span style="font-size:.8rem;color:var(--muted)">Bisección 300 iter., precisión 1e-9</span>`
+  );
+});
+ 
+/* ===== PRECIO TEÓRICO ===== */
+document.getElementById("btn-pb")?.addEventListener("click",()=>{
+  const face=Util.getN("pb-face"), ytm=Util.getN("pb-ytm"), coupon=Util.getN("pb-coupon"), years=Util.getN("pb-years");
+  const freq=parseInt(Util.$("pb-freq").value)||2;
+  const inv=[]; if(isNaN(face)||face<=0) inv.push("pb-face"); if(isNaN(ytm)) inv.push("pb-ytm"); if(isNaN(coupon)) inv.push("pb-coupon"); if(isNaN(years)||years<=0) inv.push("pb-years");
+  if(inv.length){ inv.forEach(Util.markErr); return Util.setR("pb-result","👀 Completá todos los campos."); }
+  const price=F.bondPrice({face, couponPct:coupon, ytmPct:ytm, years, freq});
+  const paridad=(price/face)*100;
+  const estadoBono=price<face-0.01?"📉 Bajo la par (descuento)":price>face+0.01?"📈 Sobre la par (prima)":"⚖️ A la par";
+  Util.setR("pb-result",
+    `<strong>Precio teórico: $${Util.fmt(price)}</strong>`+
+    Util.metric("Valor Nominal",`$${Util.fmt(face)}`)+
+    Util.metric("Paridad",Util.fmtPctRaw(paridad)+"%")+
+    `<span style="font-size:.9rem">${estadoBono}</span>`
+  );
+});
+ 
+/* ===== PARIDAD ===== */
+document.getElementById("btn-par")?.addEventListener("click",()=>{
+  const vt=Util.getN("par-vt"), price=Util.getN("par-price");
+  if(isNaN(vt)||vt<=0||isNaN(price)||price<=0){ ["par-vt","par-price"].forEach(Util.markErr); return Util.setR("par-result","👀 Ingresá VT y precio."); }
+  const par=(price/vt)*100;
+  const label=par<99.9?"Bajo la par — descuento":par>100.1?"Sobre la par — prima":"A la par";
+  Util.setR("par-result",`<strong>Paridad: ${Util.fmtPctRaw(par)}%</strong><br><span style="color:var(--muted)">${label}</span>`+Util.metric("Precio",`$${Util.fmt(price)}`)+Util.metric("Valor Técnico",`$${Util.fmt(vt)}`));
+});
+ 
+/* ===== DURATION + DV01 + CONVEXIDAD + SENSIBILIDAD ===== */
+document.getElementById("btn-duration")?.addEventListener("click",()=>{
+  const face=Util.getN("dur-face"), price=Util.getN("dur-price"), coupon=Util.getN("dur-coupon"), years=Util.getN("dur-years");
+  const ytmInput=Util.getN("dur-yield",true), freq=parseInt(Util.$("dur-freq").value)||2;
+  const inv=[]; if(isNaN(face)||face<=0) inv.push("dur-face"); if(isNaN(price)||price<=0) inv.push("dur-price"); if(isNaN(coupon)) inv.push("dur-coupon"); if(isNaN(years)||years<=0) inv.push("dur-years");
+  if(inv.length){ inv.forEach(Util.markErr); return Util.setR("duration-result","👀 Completá face, precio, cupón y años."); }
+  let ytm=ytmInput; if(isNaN(ytm)||ytm<=0) ytm=F.bondYTM({face, price, couponPct:coupon, years, freq});
+  if(isNaN(ytm)) return Util.setR("duration-result","⚠️ No se pudo estimar YTM. Ingresalo manualmente.");
+  const {macaulay, modified}=F.bondDuration({face, price, couponPct:coupon, ytmPct:ytm, years, freq});
+  const convex=F.bondConvexity({face, price, couponPct:coupon, ytmPct:ytm, years, freq});
+  const dv01=modified*price*0.0001;
+  // Sensibilidad ante shocks: ΔP/P ≈ -MD×ΔYTM + ½×Convex×(ΔYTM)²
+  const shocks=[-100,-50,-25,25,50,100]; // basis points
+  const sens=shocks.map(bp=>{
+    const dytm=bp/10000;
+    const linear=-modified*dytm;
+    const convexAdj=0.5*convex*dytm*dytm;
+    const totalPct=(linear+convexAdj)*100;
+    const newPrice=price*(1+linear+convexAdj);
+    return {bp, totalPct, newPrice};
+  });
+  const sensHtml=`<div class="sensitivity-grid">`+
+    sens.map(s=>`<div class="sens-cell ${s.bp<0?"sens-dn":s.bp>0?"sens-up":"sens-base"}">
+      <div style="font-weight:600">${s.bp>0?"+":""}${s.bp} pb</div>
+      <div>${s.totalPct>=0?"+":""}${s.totalPct.toFixed(2)}%</div>
+      <div style="font-size:.75rem;color:var(--muted)">$${Util.fmt(s.newPrice)}</div>
+    </div>`).join("")+`</div>`;
+  Util.setR("duration-result",
+    `<strong>Duration & Sensibilidad</strong>`+
+    Util.metric("Macaulay Duration",`${macaulay.toFixed(4)} años`)+
+    Util.metric("Modified Duration (MD)",modified.toFixed(6))+
+    Util.metric("DV01 (sensib. por 1 bp)",`$${Util.fmt(dv01,4)}`)+
+    Util.metric("Convexidad (anual)",convex.toFixed(4))+
+    Util.metric("YTM utilizado",ytm.toFixed(4)+"%")+
+    `<br><span style="font-size:.85rem;color:var(--muted)">Sensibilidad ΔP/P ≈ −MD·Δy + ½·Cx·Δy²</span>`+
+    sensHtml
+  );
+});
+ 
+/* ===== CURVA BONOS ===== */
+function parseBondLines(raw){
+  return raw.split(/\n+/).map(l=>l.trim()).filter(l=>l.length>0).map(line=>{
+    const [ticker,years,couponPct,priceOrYtm,ytmOrBlank,face]=line.split(";").map(s=>s.trim());
+    let price=NaN, ytm=NaN;
+    if(priceOrYtm&&!isNaN(parseFloat(priceOrYtm))) price=parseFloat(priceOrYtm);
+    if(ytmOrBlank&&!isNaN(parseFloat(ytmOrBlank))) ytm=parseFloat(ytmOrBlank);
+    return { ticker:ticker||"BONO", years:parseFloat(years), couponPct:parseFloat(couponPct)||0, price, ytmPct:ytm, face:face?parseFloat(face):100, freq:2 };
+  }).filter(b=>isFinite(b.years)&&b.years>0);
+}
+function enrichBond(b){
+  let ytm=b.ytmPct, price=b.price;
+  if(isNaN(ytm)&&isFinite(price)) ytm=F.bondYTM({face:b.face,price,couponPct:b.couponPct,years:b.years,freq:b.freq});
+  if(isNaN(price)&&isFinite(ytm)) price=F.bondPrice({face:b.face,couponPct:b.couponPct,ytmPct:ytm,years:b.years,freq:b.freq});
+  const dur=F.bondDuration({face:b.face,price,couponPct:b.couponPct,ytmPct:ytm,years:b.years,freq:b.freq});
+  return {...b, ytmPct:ytm, price, macaulay:dur.macaulay};
+}
+ 
+document.getElementById("btn-curva")?.addEventListener("click",()=>{
+  const raw=Util.$("curva-lines")?.value||"";
+  const bonds=parseBondLines(raw).map(enrichBond).filter(b=>isFinite(b.macaulay)&&isFinite(b.ytmPct));
+  const div=Util.$("curva-result"), svg=Util.$("curva-chart");
+  if(!bonds.length){ return Util.setR("curva-result","No hay bonos válidos."); }
+  let html=`<strong>${bonds.length} bono(s) procesados</strong>`;
+  bonds.forEach(b=>{ html+=Util.metric(b.ticker,`YTM ${b.ytmPct.toFixed(2)}% | Dur ${b.macaulay.toFixed(2)}a | $${Util.fmt(b.price)}`); });
+  div.innerHTML=html;
+  const {w,h,pad}=drawAxes(svg,32,"Duración","Yield%");
+  const xs=bonds.map(b=>b.macaulay), ys=bonds.map(b=>b.ytmPct);
+  const xS=mkScale(Math.min(...xs),Math.max(...xs),pad,w-pad), yS=mkScale(Math.min(...ys),Math.max(...ys),h-pad,pad);
+  bonds.forEach(b=>{
+    dot(svg,xS(b.macaulay),yS(b.ytmPct),5,"#38bdf8");
+    svgText(svg,xS(b.macaulay),yS(b.ytmPct)-8,b.ticker);
+  });
+});
+ 
+/* ===== BOOTSTRAPPING SPOT ===== */
+document.getElementById("btn-boot")?.addEventListener("click",()=>{
+  const raw=Util.$("boot-lines")?.value||"";
+  const inputs=raw.split(/\n+/).map(l=>l.trim()).filter(l=>l.length>0).map(line=>{
+    const [t,price,cpn,freq]=line.split(";").map(s=>parseFloat(s.trim()));
+    return {t, price, cpn:cpn||0, freq:freq||1};
+  }).filter(b=>isFinite(b.t)&&b.t>0&&isFinite(b.price)&&b.price>0).sort((a,b)=>a.t-b.t);
+  if(inputs.length<2) return Util.setR("boot-result","👀 Ingresá al menos 2 bonos ordenados por plazo.");
+  const spots=[]; // [{t, spot}]
+  let html=`<strong>Tasas spot bootstrapped</strong>`;
+  for(const bond of inputs){
+    const {t, price, cpn, freq} = bond;
+    const n=Math.round(t*freq), c=(cpn/100)*100/freq;
+    // Subtract PV of known coupon cash flows using existing spots
+    let pv_coupons=0;
+    let canBoot=true;
+    for(let k=1;k<n;k++){
+      const tk=k/freq;
+      const sEntry=spots.find(s=>Math.abs(s.t-tk)<0.01);
+      if(!sEntry){ canBoot=false; break; }
+      pv_coupons+=c/Math.pow(1+sEntry.spot,tk);
     }
-
-    /* ========== VAN / TIR (+ ROI + Payback) ========== */
-    const VAN_TIR = (() => {
-      const parseCFs = (raw) => (!raw || !raw.trim()) ? [] :
-        raw.split(/[\n,;]+/g).map(s=>parseFloat(s.trim())).filter(v=>!isNaN(v));
-
-      function calcular({ tasaPct, cfs }) {
-        const r=tasaPct/100;
-        const van=Finance.npv(r, cfs);
-        const { irr, warnMultipleIRR } = Finance.irr(cfs);
-
-        let roi = NaN;
-        if (cfs.length > 0 && cfs[0] < 0) {
-          const costo = Math.abs(cfs[0]);
-          roi = (cfs.reduce((a,v)=>a+v,0) / costo) - 1;
-        }
-
-        let acumulado = 0, payback = null;
-        for (let t=0; t<cfs.length; t++) {
-          acumulado += cfs[t];
-          if (acumulado >= 0) { payback = t; break; }
-        }
-
-        return { van, irr, warnMultipleIRR, roi, payback };
-      }
-
-      function render(out, node) {
-        const irrTxt = isNaN(out.irr) ? "No se pudo estimar (revisá signos/precios)" : Util.formatPercent(out.irr);
-        const roiTxt = isNaN(out.roi) ? "-" : Util.formatPercent(out.roi);
-        const pbTxt = (out.payback === null) ? "No recupera" : `${out.payback} período(s)`;
-        const warn = out.warnMultipleIRR ? "<br><span style='color:#f97316;font-size:0.85rem'>⚠️ Flujos con múltiples cambios de signo: puede existir más de una TIR.</span>" : "";
-
-        node.innerHTML =
-          `<strong>Resultados:</strong>
-           <br>VAN: ${Util.formatMoney(out.van)}
-           <br>TIR: ${irrTxt}
-           <br>ROI: ${roiTxt}
-           <br>Payback (simple): ${pbTxt}
-           ${warn}`;
-      }
-      return { parseCFs, calcular, render };
-    })();
-
-    /* ========== Duración / Modified + DV01 + Convexidad ========== */
-    const DurationMod = (() => {
-      function calcular({ face, price, couponPct, ytmPct, years, freq }) {
-        let yAn = ytmPct;
-        if ((isNaN(yAn) || yAn<=0) && !isNaN(price) && price>0) yAn = Finance.bondYieldFromPrice({ face, price, couponPct, years, freq });
-
-        const { macaulay, modified } = Finance.bondDuration({ face, price, couponPct, ytmPct: yAn, years, freq });
-        const precioTeórico = Finance.bondPrice({ face, couponPct, ytmPct: yAn, years, freq });
-        const convexidadAnual = Finance.bondConvexityAnnual({ face, price, couponPct, ytmPct: yAn, years, freq });
-        const dv01 = Finance.dv01FromModified(modified, price);
-
-        return { macaulay, modified, ytmEstimado: yAn, precioTeorico: precioTeórico, convexidadAnual, dv01 };
-      }
-      function render(out, node) {
-        node.innerHTML =
-          `<strong>Duración (Macaulay):</strong> ${isNaN(out.macaulay) ? "-" : out.macaulay.toFixed(4)} años
-           <br><strong>Duration modificada:</strong> ${isNaN(out.modified) ? "-" : out.modified.toFixed(6)} por unidad de tasa
-           <br><strong>DV01 (por bp):</strong> ${isNaN(out.dv01) ? "-" : Util.formatMoney(out.dv01)}
-           <br><strong>Convexidad (anual):</strong> ${isNaN(out.convexidadAnual) ? "-" : out.convexidadAnual.toFixed(6)}
-           <br><span style='font-size:0.85rem;color:#9ca3af'>YTM estimado: ${isNaN(out.ytmEstimado) ? "-" : Util.formatPercent(out.ytmEstimado/100)} · Precio teórico: ${Util.formatMoney(out.precioTeorico)}</span>`;
-      }
-      return { calcular, render };
-    })();
-
-    /* ========== Curva bonos (SVG) ========== */
-    const CurvaBonos = (() => {
-      function parseLines(raw) {
-        const lines = raw.split(/\n+/).map(l=>l.trim()).filter(l=>l.length>0);
-        return lines.map(line => {
-          const parts = line.split(";").map(p=>p.trim());
-          const [ticker, years, couponPct, price, ytmPct, face] = parts;
-          return {
-            ticker: ticker || "BONO",
-            years: parseFloat(years),
-            couponPct: parseFloat(couponPct),
-            price: price ? parseFloat(price) : NaN,
-            ytmPct: ytmPct ? parseFloat(ytmPct) : NaN,
-            face: face ? parseFloat(face) : 100,
-            freq: 2
-          };
-        }).filter(b => !isNaN(b.years) && !isNaN(b.couponPct));
-      }
-
-      function enrich(bond) {
-        let ytm = bond.ytmPct;
-        let price = bond.price;
-        if (isNaN(ytm) && isFinite(price)) ytm = Finance.bondYieldFromPrice({ face: bond.face, price, couponPct: bond.couponPct, years: bond.years, freq: bond.freq });
-        if (isNaN(price) && isFinite(ytm)) price = Finance.bondPrice({ face: bond.face, couponPct: bond.couponPct, ytmPct: ytm, years: bond.years, freq: bond.freq });
-        const dur = Finance.bondDuration({ face: bond.face, price, couponPct: bond.couponPct, ytmPct: ytm, years: bond.years, freq: bond.freq });
-        return { ...bond, ytmPct: ytm, price, macaulay: dur.macaulay };
-      }
-
-      function renderTableAndChart(bonds, resultNode, svgNode) {
-        if (!bonds.length) { resultNode.innerHTML = "No se encontraron bonos válidos."; svgNode.innerHTML=""; return; }
-        let html = `<strong>Bonos procesados:</strong>`;
-        html += `<br><span class="chip">Puntos: ${bonds.length}</span>`;
-        html += `<br><span style='font-size:0.85rem;color:#9ca3af'>Yield vs Duración (años). Frecuencia 2 por defecto.</span>`;
-        const w = svgNode.clientWidth || 600, h = svgNode.clientHeight || 240, padding = 30;
-        const xs = bonds.map(b=>b.macaulay).filter(v=>isFinite(v));
-        const ys = bonds.map(b=>b.ytmPct).filter(v=>isFinite(v));
-        const minX = Math.min(...xs), maxX = Math.max(...xs);
-        const minY = Math.min(...ys), maxY = Math.max(...ys);
-        const xScale = (x) => padding + ( (x - minX)/(maxX - minX || 1) ) * (w - 2*padding);
-        const yScale = (y) => h - padding - ( (y - minY)/(maxY - minY || 1) ) * (h - 2*padding);
-        svgNode.innerHTML = `
-          <rect x="0" y="0" width="${w}" height="${h}" fill="transparent"></rect>
-          <line x1="${padding}" y1="${h - padding}" x2="${w - padding}" y2="${h - padding}" stroke="#64748b" stroke-width="1"/>
-          <line x1="${padding}" y1="${padding}" x2="${padding}" y2="${h - padding}" stroke="#64748b" stroke-width="1"/>
-          <text x="${w - padding - 40}" y="${h - padding + 12}">Duración</text>
-          <text x="${padding - 22}" y="${padding - 8}" transform="rotate(-90 ${padding - 22}, ${padding - 8})">Yield (%)</text>
-        `;
-        bonds.forEach((b) => {
-          if (!isFinite(b.macaulay) || !isFinite(b.ytmPct)) return;
-          const cx = xScale(b.macaulay), cy = yScale(b.ytmPct);
-          const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-          circle.setAttribute("cx", cx); circle.setAttribute("cy", cy); circle.setAttribute("r", 4);
-          circle.setAttribute("fill", "#38bdf8"); circle.setAttribute("stroke", "#0ea5e9"); circle.setAttribute("stroke-width", "1");
-          svgNode.appendChild(circle);
-        });
-        resultNode.innerHTML = html;
-      }
-
-      return { parseLines, enrich, renderTableAndChart };
-    })();
-
-    /* ========== Paridad de bonos ========== */
-    const ParidadBonos = (() => {
-      function calcular({ face, price, couponPct, ytmPct, years, freq }) {
-        const paridadPct = (face>0) ? (price/face)*100 : NaN;
-        let tirAn = ytmPct;
-        if ((isNaN(tirAn) || tirAn<=0) && price>0) tirAn = Finance.bondYieldFromPrice({ face, price, couponPct, years, freq });
-        return { paridadPct, tirAn };
-      }
-      function render(out, node) {
-        node.innerHTML =
-          `<strong>Paridad:</strong> ${isNaN(out.paridadPct) ? "-" : out.paridadPct.toFixed(2)}%
-           <br><span style='font-size:0.85rem;color:#9ca3af'>TIR estimada: ${isNaN(out.tirAn) ? "-" : Util.formatPercent(out.tirAn/100)}</span>`;
-      }
-      return { calcular, render };
-    })();
-
-    /* ========== FV / PV / PMT / Amortización ========== */
-    const FV = (() => { function calcular(pvVal, ratePercent, n){ const i=ratePercent/100; return { fv: Finance.fv(pvVal,i,n) }; }
-      function render({fv}, node, period, ratePercent, n){ node.innerHTML = `<strong>Valor futuro:</strong>${Util.formatMoney(fv)}<br><span style='font-size:0.85rem;color:#9ca3af'>Cap. ${period}, tasa ${ratePercent}%, ${n} período(s).</span>`; }
-      return { calcular, render }; })();
-
-    const PVCalc = (() => { function calcular(fvVal, ratePercent, n){ const i=ratePercent/100; return { pvCalc: Finance.pv(fvVal,i,n) }; }
-      function render({pvCalc}, node, period, ratePercent, n){ node.innerHTML = `<strong>Valor presente:</strong>${Util.formatMoney(pvCalc)}<br><span style='font-size:0.85rem;color:#9ca3af'>Cap. ${period}, tasa ${ratePercent}%, ${n} período(s).</span>`; }
-      return { calcular, render }; })();
-
-    const PMTMod = (() => { function calcular(pvVal, ratePercent, n){
-        const i=ratePercent/100; if(i===0){ const pmt=pvVal/n; return { pmt, totalPagos:pmt*n, intereses:pmt*n-pvVal, sinInteres:true }; }
-        const pmt = Finance.pmt(pvVal,i,n); const totalPagos = pmt*n; const intereses = totalPagos - pvVal; return { pmt, totalPagos, intereses, sinInteres:false };
-      }
-      function render(out,node,period,ratePercent,n){
-        if(out.sinInteres){ node.innerHTML = `<strong>Cuota (sin interés):</strong>${Util.formatMoney(out.pmt)}<br><span style='font-size:0.85rem;color:#9ca3af'>PV / n.</span>`; return; }
-        node.innerHTML = `<strong>Cuota:</strong>${Util.formatMoney(out.pmt)}<br><span style='font-size:0.85rem;color:#9ca3af'>Período ${period}, tasa ${ratePercent}%, ${n} período(s).</span><br><span style='font-size:0.85rem;color:#9ca3af'>Total: ${Util.formatMoney(out.totalPagos)} | Intereses: ${Util.formatMoney(out.intereses)}</span>`;
-      }
-      return { calcular, render }; })();
-
-    const Amortizacion = (() => {
-      function generar(amount, ratePercent, n, system){
-        const i=ratePercent/100; let rows=[], saldo=amount, cuota=0, totalCuotas=0, totalIntereses=0;
-        if(system==="frances"){
-          cuota = i===0 ? amount/n : Finance.pmt(amount,i,n);
-          for(let k=1;k<=n;k++){ const interes=saldo*i; const amort=cuota-interes; saldo -= amort;
-            rows.push({periodo:k, cuota, interes, amortizacion:amort, saldo:Math.max(saldo,0)});
-            totalCuotas+=cuota; totalIntereses+=interes; }
-        } else if(system==="aleman"){
-          const amortConst=amount/n;
-          for(let k=1;k<=n;k++){ const interes=saldo*i; const cuotaPer=amortConst+interes; saldo -= amortConst;
-            rows.push({periodo:k, cuota:cuotaPer, interes, amortizacion:amortConst, saldo:Math.max(saldo,0)});
-            totalCuotas+=cuotaPer; totalIntereses+=interes; }
-        } else if(system==="americano"){
-          const interesPer=amount*i;
-          for(let k=1;k<=n;k++){ let cuotaPer, interes, amort;
-            if(k<n){ interes=interesPer; amort=0; cuotaPer=interesPer; }
-            else { interes=interesPer; amort=amount; cuotaPer=interes+amort; saldo=0; }
-            rows.push({periodo:k, cuota:cuotaPer, interes, amortizacion:amort, saldo:Math.max(saldo,0)});
-            totalCuotas+=cuotaPer; totalIntereses+=interes; }
-        }
-        return { rows, resumen:{ totalCuotas, totalIntereses, amount } };
-      }
-      function render(rows,resumen,resultDiv,wrapper,ratePercent,n,system){
-        if(!rows.length){ resultDiv.innerHTML="No se pudo generar la tabla."; wrapper.innerHTML=""; return; }
-        resultDiv.innerHTML =
-          `<strong>Resumen del crédito:</strong><br>Total cuotas: ${Util.formatMoney(resumen.totalCuotas)}<br>Total intereses: ${Util.formatMoney(resumen.totalIntereses)}
-           <br><span style='font-size:0.85rem;color:#9ca3af'>Sistema ${system.toUpperCase()} · tasa ${ratePercent}% · ${n} período(s).</span>`;
-        let html = `<table class="amort-table"><thead><tr><th>#</th><th>Cuota</th><th>Interés</th><th>Amortización</th><th>Saldo</th></tr></thead><tbody>`;
-        rows.forEach(r => { html += `<tr><td>${r.periodo}</td><td>${Util.formatMoney(r.cuota)}</td><td>${Util.formatMoney(r.interes)}</td><td>${Util.formatMoney(r.amortizacion)}</td><td>${Util.formatMoney(r.saldo)}</td></tr>`; });
-        html += `</tbody><tfoot><tr><td></td><td>${Util.formatMoney(resumen.totalCuotas)}</td><td>${Util.formatMoney(resumen.totalIntereses)}</td><td>${Util.formatMoney(resumen.amount)}</td><td>${Util.formatMoney(0)}</td></tr></tfoot></table>`;
-        wrapper.innerHTML = html;
-      }
-      return { generar, render };
-    })();
-
-    /* ========== Gráficos (PFUVA, Simulador, VAN) ========== */
-    function drawAxes(svg, padding = 30, xLabel = "", yLabel = "") {
-      const w = svg.clientWidth || 600;
-      const h = svg.clientHeight || 240;
-
-      svg.innerHTML = `
-        <rect x="0" y="0" width="${w}" height="${h}" fill="transparent"></rect>
-        <line x1="${padding}" y1="${h - padding}" x2="${w - padding}" y2="${h - padding}" stroke="#64748b" stroke-width="1"/>
-        <line x1="${padding}" y1="${padding}" x2="${padding}" y2="${h - padding}" stroke="#64748b" stroke-width="1"/>
-        <text x="${w - padding - 40}" y="${h - padding + 12}">${xLabel}</text>
-        <text x="${padding - 22}" y="${padding - 8}" transform="rotate(-90 ${padding - 22}, ${padding - 8})">${yLabel}</text>
-      `;
-      return { w, h, padding };
-    }
-    function makeScale(min, max, outMin, outMax) { const span=(max-min)||1; return v => outMin + ((v-min)/span)*(outMax-outMin); }
-
-    function renderChartPFUVA({ montoPF, montoUVA, realPF, realUVA }) {
-      const svg = document.getElementById("pf-uva-chart"); if (!svg) return;
-      const { w, h, padding } = drawAxes(svg, 36, "Instrumento", "Monto");
-      const labels = ["PF nominal", "UVA nominal", "PF real", "UVA real"];
-      const values = [montoPF, montoUVA, realPF, realUVA];
-
-      const maxVal = Math.max(...values.filter(v => isFinite(v)));
-      const x0 = padding + 10, x1 = w - padding - 10, y0 = h - padding - 2, yTop = padding + 6;
-      const xStep = (x1 - x0) / values.length;
-      const yScale = makeScale(0, maxVal, y0, yTop);
-
-      values.forEach((val, i) => {
-        const x = x0 + i * xStep + 8;
-        const barWidth = Math.max(18, xStep * 0.6);
-        const y = yScale(val);
-
-        const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-        rect.setAttribute("x", x); rect.setAttribute("y", y);
-        rect.setAttribute("width", barWidth); rect.setAttribute("height", Math.max(1, y0 - y));
-        rect.setAttribute("fill", i < 2 ? "#38bdf8" : "#f59e0b"); rect.setAttribute("rx", "4");
-        svg.appendChild(rect);
-
-        const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
-        label.setAttribute("x", x + barWidth / 2); label.setAttribute("y", y0 + 14);
-        label.setAttribute("text-anchor", "middle"); label.textContent = labels[i];
-        svg.appendChild(label);
-
-        const valText = document.createElementNS("http://www.w3.org/2000/svg", "text");
-        valText.setAttribute("x", x + barWidth / 2); valText.setAttribute("y", y - 4);
-        valText.setAttribute("text-anchor", "middle"); valText.textContent = Util.formatMoney(val);
-        svg.appendChild(valText);
-      });
-    }
-
-    function buildSimSeries({ pvInicial, aporteFijo, aportesVars, ratePercent, n }) {
-      const i = ratePercent / 100;
-      const parse = raw => (!raw || !raw.trim()) ? [] :
-        raw.split(/[\n,;]+/g).map(s=>parseFloat(s.trim())).filter(v=>!isNaN(v));
-      let lista = parse(aportesVars); let N = n;
-      if (lista.length > 0) N = lista.length; else lista = Array.from({ length: N }, () => aporteFijo || 0);
-
-      const series = []; let acc = pvInicial || 0;
-      for (let t = 1; t <= N; t++) { acc = acc * (1+i); acc += lista[t-1] || 0; series.push({ t, value: acc }); }
-      return series;
-    }
-    function renderSimChart(series) {
-      const svg = document.getElementById("sim-chart"); if (!svg || !series?.length) return;
-      const { w, h, padding } = drawAxes(svg, 36, "Período", "Acumulado");
-      const xs = series.map(p=>p.t), ys = series.map(p=>p.value);
-      const minX = Math.min(...xs), maxX = Math.max(...xs), minY = Math.min(...ys), maxY = Math.max(...ys);
-      const xScale = makeScale(minX, maxX, padding, w - padding);
-      const yScale = makeScale(minY, maxY, h - padding, padding);
-
-      for (let i=1;i<series.length;i++) {
-        const p0=series[i-1], p1=series[i];
-        const line=document.createElementNS("http://www.w3.org/2000/svg","line");
-        line.setAttribute("x1",xScale(p0.t)); line.setAttribute("y1",yScale(p0.value));
-        line.setAttribute("x2",xScale(p1.t)); line.setAttribute("y2",yScale(p1.value));
-        line.setAttribute("stroke","#10b981"); line.setAttribute("stroke-width","2");
-        svg.appendChild(line);
-      }
-      const step = Math.max(1, Math.floor(series.length/6));
-      series.forEach((p, idx) => {
-        const cx=xScale(p.t), cy=yScale(p.value);
-        const dot=document.createElementNS("http://www.w3.org/2000/svg","circle");
-        dot.setAttribute("cx",cx); dot.setAttribute("cy",cy); dot.setAttribute("r",3.5);
-        dot.setAttribute("fill","#10b981"); dot.setAttribute("stroke","#064e3b"); dot.setAttribute("stroke-width","1");
-        svg.appendChild(dot);
-        if (idx%step===0 || idx===series.length-1) {
-          const label=document.createElementNS("http://www.w3.org/2000/svg","text");
-          label.setAttribute("x",cx); label.setAttribute("y",cy-6); label.setAttribute("text-anchor","middle");
-          label.textContent = Util.formatMoney(p.value); svg.appendChild(label);
-        }
-      });
-    }
-
-    function sweepVANvsTasa(cfs, minPct=0, maxPct=100, points=50) {
-      const arr=[]; for(let k=0;k<=points;k++){ const pct=minPct+(k*(maxPct-minPct))/points; const r=pct/100; const van=Finance.npv(r,cfs); arr.push({ pct, van }); }
-      return arr;
-    }
-    function renderVANChart(points) {
-      const svg=document.getElementById("van-chart"); if(!svg || !points?.length) return;
-      const { w, h, padding } = drawAxes(svg, 36, "Tasa (%)", "VAN");
-      const xs=points.map(p=>p.pct), ys=points.map(p=>p.van);
-      const minX=Math.min(...xs), maxX=Math.max(...xs), minY=Math.min(...ys), maxY=Math.max(...ys);
-      const xScale=makeScale(minX,maxX,padding,w-padding), yScale=makeScale(minY,maxY,h-padding,padding);
-      for(let i=1;i<points.length;i++){
-        const p0=points[i-1], p1=points[i];
-        const line=document.createElementNS("http://www.w3.org/2000/svg","line");
-        line.setAttribute("x1",xScale(p0.pct)); line.setAttribute("y1",yScale(p0.van));
-        line.setAttribute("x2",xScale(p1.pct)); line.setAttribute("y2",yScale(p1.van));
-        line.setAttribute("stroke","#8b5cf6"); line.setAttribute("stroke-width","2");
-        svg.appendChild(line);
-      }
-      const step=Math.max(1, Math.floor(points.length/10));
-      points.forEach((p,idx)=>{ if(idx%step===0 || idx===points.length-1){
-        const tx=document.createElementNS("http://www.w3.org/2000/svg","text");
-        tx.setAttribute("x",xScale(p.pct)); tx.setAttribute("y",h - padding + 12);
-        tx.setAttribute("text-anchor","middle"); tx.textContent = `${p.pct.toFixed(0)}%`; svg.appendChild(tx);
-      }});
-    }
-
-    /* ========== Orquestación + UI ========== */
-    document.getElementById("theme-toggle")?.addEventListener("click", () => {
-      document.body.classList.toggle("light");
-    });
-
-    // Desplegar paneles del índice
-    document.querySelectorAll(".index-item[data-panel]").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const panelId = btn.dataset.panel;
-        const panel = document.getElementById(panelId);
-        if (!panel) return;
-        const abrir = panel.hasAttribute("hidden");
-        panel.toggleAttribute("hidden", !abrir);
-        btn.setAttribute("aria-expanded", String(abrir));
-      });
-    });
-
-    // Montar/desmontar cards en los slots del índice
-    document.querySelectorAll(".index-item.mount-card").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const cardId = btn.dataset.card;
-        const slot = btn.nextElementSibling && btn.nextElementSibling.classList.contains("mount-slot")
-          ? btn.nextElementSibling
-          : null;
-        if (!cardId || !slot) return;
-        Dock.mount(cardId, slot);
-      });
-    });
-
-    // ==== PF vs UVA ====
-    document.getElementById("btn-pf-uva")?.addEventListener("click", () => {
-      const monto=Util.getNumber("pf-monto"), tnaPF=Util.getNumber("pf-tna"), infl=Util.getNumber("pf-inflacion"), plus=Util.getNumber("pf-plus",true)||0, dias=Util.getNumber("pf-dias");
-      const div=Util.$("pf-uva-result");
-      const inv=[]; if(isNaN(monto))inv.push("pf-monto"); if(isNaN(tnaPF))inv.push("pf-tna"); if(isNaN(infl))inv.push("pf-inflacion"); if(isNaN(dias)||dias<=0)inv.push("pf-dias");
-      if(inv.length){ inv.forEach(Util.markError); return Util.setResult(div,"👀 Completá monto, TNA, inflación y días (plus opcional)."); }
-      const out=PFUVA.comparar({monto,tnaPF,inflacion:infl,plus,dias}); PFUVA.render(out,div,dias); renderChartPFUVA(out);
-    });
-
-    // ==== Tasas ====
-    document.getElementById("btn-rate-convert")?.addEventListener("click", () => {
-      const type=Util.$("rate-type").value, ratePercent=Util.getNumber("rate-input"), div=Util.$("rate-result");
-      if(isNaN(ratePercent)){ Util.markError("rate-input"); return Util.setResult(div,"👀 Ingresá una tasa."); }
-      const conv=Tasas.convertir(type,ratePercent);
-      Util.setResult(div, `<strong>Conversión de tasas:</strong><br>TNA ≈ ${Util.formatPercent(conv.tna)}<br>TEA = ${Util.formatPercent(conv.tea)}<br>TEM = ${Util.formatPercent(conv.tem)}<br><span style='font-size:0.8rem;color:#9ca3af'>12 períodos/año, cap. mensual.</span>`);
-    });
-
-    // ==== Simulador ====
-    document.getElementById("btn-sim")?.addEventListener("click", () => {
-      const pvInicial=Util.getNumber("sim-pv"), aporteFijo=Util.getNumber("sim-pmt",true)||0, ratePercent=Util.getNumber("sim-rate"), n=Util.getNumber("sim-n",true)||0;
-      const period=Util.$("sim-period").value, aportesVars=Util.$("sim-aportes").value, div=Util.$("sim-result");
-      if(isNaN(ratePercent)){ Util.markError("sim-rate"); return Util.setResult(div,"👀 Completá la tasa por período."); }
-      if(!aportesVars.trim() && (isNaN(aporteFijo)||isNaN(n)||n<=0)){ Util.markError("sim-pmt"); Util.markError("sim-n"); return Util.setResult(div,"👀 Aporte fijo + n, o lista variable."); }
-      if(isNaN(pvInicial)){ Util.markError("sim-pv"); return Util.setResult(div,"👀 PV debe ser número o vacío."); }
-      const out=Simulador.calcular({ pvInicial:pvInicial||0, aporteFijo, aportesVars, ratePercent, n }); Simulador.render(out,div,period,ratePercent);
-      const series = buildSimSeries({ pvInicial: pvInicial || 0, aporteFijo, aportesVars, ratePercent, n: out.nFinal }); renderSimChart(series);
-    });
-
-    // ==== Objetivos ====
-    document.getElementById("btn-obj")?.addEventListener("click", () => {
-      const fvObj=Util.getNumber("obj-fv"), pvInicial=Util.getNumber("obj-pv",true)||0, ratePercent=Util.getNumber("obj-rate"), n=Util.getNumber("obj-n");
-      const period=Util.$("obj-period").value, div=Util.$("obj-result");
-      const inv=[]; if(isNaN(fvObj))inv.push("obj-fv"); if(isNaN(ratePercent))inv.push("obj-rate"); if(isNaN(n)||n<=0)inv.push("obj-n");
-      if(inv.length){ inv.forEach(Util.markError); return Util.setResult(div,"👀 Completá FV, tasa y n."); }
-      const out=Objetivos.calcularPMTObjetivo({ fvObj, pvInicial, ratePercent, n }); Objetivos.render(out,div,period,ratePercent,n);
-    });
-
-    // ==== Tipo de cambio (multi auto) ====
-    (function wireTipoCambioAuto() {
-      const tipoSel = Util.$("tc-tipo");
-      const btnAuto = Util.$("btn-tc-auto");
-      const cotizEl = Util.$("tc-cotizacion");
-      const result  = Util.$("tc-result");
-      const direccionSel = Util.$("tc-direccion");
-
-      if (!tipoSel || !btnAuto || !cotizEl || !result || !direccionSel) return;
-
-      const isAutoType = (val) => val && val.endsWith("-auto");
-      const kindFromType = (val) => {
-        if (val === "bna-auto") return "bna";
-        const k = val.replace("-auto", "");
-        return k; // mep, ccl, blue, mayorista, solidario, tarjeta, cripto
-      };
-
-      const refreshAutoVisibility = () => {
-        const show = isAutoType(tipoSel.value);
-        btnAuto.style.display = show ? "block" : "none";
-        if (show) cotizEl.value = "";
-      };
-      tipoSel.addEventListener("change", refreshAutoVisibility);
-      refreshAutoVisibility();
-
-      async function traerAutoCotizacion() {
-        const tipo = tipoSel.value;
-        const direccion = direccionSel.value; // ars-usd => venta; usd-ars => compra
-        result.innerHTML = "⏳ Consultando cotización…";
-        let data = null;
-        let fuente = "";
-
-        if (tipo === "bna-auto") {
-          data = await fetchBNAOficialHoy();
-          fuente = "BNA (via APIs públicas)";
-        } else {
-          const kind = kindFromType(tipo);
-          data = await fetchTipoCambioAuto(kind);
-          fuente = kind.toUpperCase();
-        }
-
-        if (data && isFinite(data.compra) && isFinite(data.venta)) {
-          // elegir compra/venta según dirección
-          const usar = (direccion === "usd-ars") ? data.compra : data.venta;
-          cotizEl.value = usar;
-          result.innerHTML = `<strong>${fuente}:</strong> Compra ${data.compra.toLocaleString("es-AR")} | Venta ${data.venta.toLocaleString("es-AR")} (ARS/USD)
-                              <br><span style="font-size:0.85rem;color:#9ca3af">Usando <b>${direccion==="usd-ars"?"compra":"venta"}</b> · Fuente: ${data.source}</span>`;
-        } else {
-          result.innerHTML = "⚠️ No pude obtener la cotización automáticamente. Ingresá la cotización manual y probemos de nuevo.";
-        }
-      }
-
-      btnAuto.addEventListener("click", traerAutoCotizacion);
-
-      document.getElementById("btn-tc")?.addEventListener("click", async () => {
-        const monto = Util.getNumber("tc-monto");
-        const direccion = direccionSel.value;
-        const tipo = tipoSel.value;
-
-        if (isNaN(monto)) { Util.markError("tc-monto"); return result.innerHTML = "👀 Ingresá un monto."; }
-
-        if (isAutoType(tipo) && (!cotizEl.value || cotizEl.value.trim() === "")) {
-          await traerAutoCotizacion();
-          if (!cotizEl.value) return; // si no hay valor tras intentar, salimos
-        }
-
-        const cotizacion = parseFloat(cotizEl.value);
-        if (isNaN(cotizacion) || cotizacion <= 0) {
-          Util.markError("tc-cotizacion");
-          return result.innerHTML = "👀 Ingresá/traé una cotización válida (ARS por USD).";
-        }
-
-        const out = TipoCambio.convertir({ monto, direccion, cotizacion });
-        TipoCambio.render(out, result);
-      });
-    })();
-
-    // ==== Corporativos ====
-    document.getElementById("btn-van-tir")?.addEventListener("click", () => {
-      const tasaPct=Util.getNumber("cf-tasa"), raw=Util.$("cf-lista").value, div=Util.$("van-tir-result");
-      if(isNaN(tasaPct)){ Util.markError("cf-tasa"); return Util.setResult(div,"👀 Ingresá tasa de descuento."); }
-      const cfs=VAN_TIR.parseCFs(raw);
-      if(!cfs.length){ Util.markError("cf-lista"); return Util.setResult(div,"👀 Ingresá al menos un flujo."); }
-      const out=VAN_TIR.calcular({ tasaPct, cfs }); VAN_TIR.render(out, div);
-      const sweep = sweepVANvsTasa(cfs, 0, 100, 60); renderVANChart(sweep);
-    });
-
-    document.getElementById("btn-duration")?.addEventListener("click", () => {
-      const face=Util.getNumber("dur-face"), price=Util.getNumber("dur-price"), couponPct=Util.getNumber("dur-coupon"), ytmPct=Util.getNumber("dur-yield",true), years=Util.getNumber("dur-years"), freq=parseInt(Util.$("dur-freq").value,10);
-      const div=Util.$("duration-result");
-      const inv=[]; if(isNaN(face)||face<=0)inv.push("dur-face"); if(isNaN(price)||price<=0)inv.push("dur-price"); if(isNaN(couponPct))inv.push("dur-coupon"); if(isNaN(years)||years<=0)inv.push("dur-years");
-      if(inv.length){ inv.forEach(Util.markError); return Util.setResult(div,"👀 Completá face, precio, cupón y años."); }
-      const out=DurationMod.calcular({ face, price, couponPct, ytmPct, years, freq }); DurationMod.render(out, div);
-    });
-
-    document.getElementById("btn-curva")?.addEventListener("click", () => {
-      const raw=Util.$("curva-lines").value, div=Util.$("curva-result"), svg=Util.$("curva-chart");
-      const parsed=CurvaBonos.parseLines(raw);
-      const enriched=parsed.map(CurvaBonos.enrich);
-      CurvaBonos.renderTableAndChart(enriched, div, svg);
-    });
-
-    document.getElementById("btn-paridad")?.addEventListener("click", () => {
-      const face=Util.getNumber("par-face"), price=Util.getNumber("par-price"), couponPct=Util.getNumber("par-coupon"), ytmPct=Util.getNumber("par-yield",true), years=Util.getNumber("par-years"), freq=parseInt(Util.$("par-freq").value,10);
-      const div=Util.$("paridad-result");
-      const inv=[]; if(isNaN(face)||face<=0)inv.push("par-face"); if(isNaN(price)||price<=0)inv.push("par-price"); if(isNaN(couponPct))inv.push("par-coupon"); if(isNaN(years)||years<=0)inv.push("par-years");
-      if(inv.length){ inv.forEach(Util.markError); return Util.setResult(div,"👀 Completá face, precio, cupón y años."); }
-      const out=ParidadBonos.calcular({ face, price, couponPct, ytmPct, years, freq }); ParidadBonos.render(out, div);
-    });
-
-    // ==== FV / PV / PMT / Amortización ====
-    document.getElementById("btn-fv")?.addEventListener("click", () => {
-      const pvVal=Util.getNumber("fv-pv"), ratePercent=Util.getNumber("fv-rate"), n=Util.getNumber("fv-n"), period=Util.$("fv-period").value, div=Util.$("fv-result");
-      if([pvVal, ratePercent, n].some(x=>isNaN(x))){ ["fv-pv","fv-rate","fv-n"].forEach(Util.markError); return Util.setResult(div,"👀 Completá todos los campos."); }
-      const out=FV.calcular(pvVal, ratePercent, n); FV.render(out, div, period, ratePercent, n);
-    });
-
-    document.getElementById("btn-pv")?.addEventListener("click", () => {
-      const fvVal=Util.getNumber("pv-fv"), ratePercent=Util.getNumber("pv-rate"), n=Util.getNumber("pv-n"), period=Util.$("pv-period").value, div=Util.$("pv-result");
-      if([fvVal, ratePercent, n].some(x=>isNaN(x))){ ["pv-fv","pv-rate","pv-n"].forEach(Util.markError); return Util.setResult(div,"👀 Completá todos los campos."); }
-      const out=PVCalc.calcular(fvVal, ratePercent, n); PVCalc.render(out, div, period, ratePercent, n);
-    });
-
-    document.getElementById("btn-pmt")?.addEventListener("click", () => {
-      const pvVal=Util.getNumber("pmt-pv"), ratePercent=Util.getNumber("pmt-rate"), n=Util.getNumber("pmt-n"), period=Util.$("pmt-period").value, div=Util.$("pmt-result");
-      if([pvVal, ratePercent, n].some(x=>isNaN(x))){ ["pmt-pv","pmt-rate","pmt-n"].forEach(Util.markError); return Util.setResult(div,"👀 Completá todos los campos."); }
-      const out=PMTMod.calcular(pvVal, ratePercent, n); PMTMod.render(out, div, period, ratePercent, n);
-    });
-
-    document.getElementById("btn-loan")?.addEventListener("click", () => {
-      const amount=Util.getNumber("loan-amount"), ratePercent=Util.getNumber("loan-rate"), n=Util.getNumber("loan-n"), system=Util.$("loan-system").value, div=Util.$("loan-result"), wrap=Util.$("loan-table-wrapper");
-      if(isNaN(amount)||isNaN(ratePercent)||isNaN(n)||n<=0){ ["loan-amount","loan-rate","loan-n"].forEach(Util.markError); wrap.innerHTML=""; return Util.setResult(div,"👀 Completá monto, tasa y n."); }
-      const { rows, resumen }=Amortizacion.generar(amount, ratePercent, n, system); Amortizacion.render(rows, resumen, div, wrap, ratePercent, n, system);
-    });
-  </script>
+    if(!canBoot) continue;
+    // Last cash flow: coupon + face
+    const lastCF=c+100;
+    const pvLast=price-pv_coupons;
+    if(pvLast<=0) continue;
+    // pvLast = lastCF/(1+sT)^t => sT = (lastCF/pvLast)^(1/t) - 1
+    const sT=Math.pow(lastCF/pvLast,1/t)-1;
+    spots.push({t, spot:sT});
+    html+=Util.metric(`Spot ${t} años`,Util.fmtPctRaw(sT*100,4)+"%");
+  }
+  Util.setR("boot-result",html);
+  // chart
+  const svg=Util.$("boot-chart");
+  if(!svg||spots.length<2) return;
+  const {w,h,pad}=drawAxes(svg,32,"Plazo (años)","Spot %");
+  const ts=spots.map(s=>s.t), ys=spots.map(s=>s.spot*100);
+  const xS=mkScale(Math.min(...ts),Math.max(...ts),pad,w-pad), yS=mkScale(Math.min(...ys),Math.max(...ys),h-pad,pad);
+  polyline(svg,spots.map(s=>[xS(s.t),yS(s.spot*100)]),"#a5b4fc",2);
+  spots.forEach(s=>{ dot(svg,xS(s.t),yS(s.spot*100),4,"#a5b4fc"); svgText(svg,xS(s.t),yS(s.spot*100)-8,`${(s.spot*100).toFixed(2)}%`); });
+});
+ 
+/* ===== FORWARD RATES ===== */
+document.getElementById("btn-fw")?.addEventListener("click",()=>{
+  const s1=Util.getN("fw-s1")/100, t1=Util.getN("fw-t1"), s2=Util.getN("fw-s2")/100, t2=Util.getN("fw-t2");
+  const inv=[]; if(isNaN(s1*100)) inv.push("fw-s1"); if(isNaN(t1)||t1<0) inv.push("fw-t1"); if(isNaN(s2*100)) inv.push("fw-s2"); if(isNaN(t2)||t2<=t1) inv.push("fw-t2");
+  if(inv.length){ inv.forEach(Util.markErr); return Util.setR("fw-result","👀 Completá todos los campos. t2 debe ser mayor a t1."); }
+  // f(t1,t2) = [(1+s2)^t2 / (1+s1)^t1]^(1/(t2-t1)) - 1
+  const forward=Math.pow(Math.pow(1+s2,t2)/Math.pow(1+s1,t1),1/(t2-t1))-1;
+  Util.setR("fw-result",
+    `<strong>Forward Rate f(${t1}a→${t2}a): ${Util.fmtPctRaw(forward*100,4)}%</strong>`+
+    Util.metric(`Spot ${t1} años (s₁)`,Util.fmtPctRaw(s1*100)+"%")+
+    Util.metric(`Spot ${t2} años (s₂)`,Util.fmtPctRaw(s2*100)+"%")+
+    `<span style="font-size:.8rem;color:var(--muted)">f = [(1+s₂)^t₂/(1+s₁)^t₁]^(1/(t₂−t₁)) − 1</span>`
+  );
+});
+ 
+/* ===== VAN / TIR ===== */
+document.getElementById("btn-van-tir")?.addEventListener("click",()=>{
+  const tasa=Util.getN("cf-tasa"), raw=Util.$("cf-lista")?.value||"";
+  const cfs=raw.split(/[\n,;]+/g).map(s=>parseFloat(s.trim())).filter(v=>!isNaN(v));
+  if(isNaN(tasa)){ Util.markErr("cf-tasa"); return Util.setR("van-tir-result","👀 Ingresá tasa."); }
+  if(!cfs.length){ Util.markErr("cf-lista"); return Util.setR("van-tir-result","👀 Ingresá flujos."); }
+  const r=tasa/100, van=F.npv(r,cfs), irrV=F.irr(cfs);
+  let roi=NaN; if(cfs[0]<0) roi=(cfs.reduce((a,v)=>a+v,0)/Math.abs(cfs[0]))-1;
+  let pb=null, acc=0; for(let t=0;t<cfs.length;t++){acc+=cfs[t]; if(acc>=0){pb=t;break;}}
+  Util.setR("van-tir-result",
+    `<strong>VAN: $${Util.fmt(van)} ${van>=0?'<span class="ok">✓ Viable</span>':'<span class="warn">✗ No viable</span>'}</strong>`+
+    Util.metric("TIR",isNaN(irrV)?"No converge":Util.fmtPctRaw(irrV*100,4)+"%")+
+    Util.metric("ROI",isNaN(roi)?"—":Util.fmtPctRaw(roi*100)+"%")+
+    Util.metric("Payback (simple)",pb===null?"No recupera":`${pb} período(s)`)
+  );
+  // chart VAN vs tasa
+  const svg=Util.$("van-chart"); if(!svg) return;
+  const pts=[]; for(let k=0;k<=60;k++){ const pct=k*2; pts.push({x:pct,y:F.npv(pct/100,cfs)}); }
+  const {w,h,pad}=drawAxes(svg,32,"Tasa %","VAN");
+  const xs=pts.map(p=>p.x), ys=pts.map(p=>p.y);
+  const xS=mkScale(Math.min(...xs),Math.max(...xs),pad,w-pad), yS=mkScale(Math.min(...ys),Math.max(...ys),h-pad,pad);
+  polyline(svg,pts.map(p=>[xS(p.x),yS(p.y)]),"#8b5cf6",2);
+  // zero line
+  const y0=yS(0); if(y0>pad&&y0<h-pad){const l=document.createElementNS("http://www.w3.org/2000/svg","line"); l.setAttribute("x1",pad); l.setAttribute("y1",y0); l.setAttribute("x2",w-pad); l.setAttribute("y2",y0); l.setAttribute("stroke","#475569"); l.setAttribute("stroke-dasharray","4 3"); svg.appendChild(l);}
+});
+ 
+/* ===== AMORTIZACIÓN ===== */
+document.getElementById("btn-loan")?.addEventListener("click",()=>{
+  const amount=Util.getN("loan-amount"), rate=Util.getN("loan-rate"), n=Util.getN("loan-n"), sys=Util.$("loan-system").value;
+  if(isNaN(amount)||isNaN(rate)||isNaN(n)||n<=0){ ["loan-amount","loan-rate","loan-n"].forEach(Util.markErr); return Util.setR("loan-result","👀 Completá monto, tasa y n."); }
+  const i=rate/100; let rows=[], saldo=amount, totCuotas=0, totInt=0;
+  if(sys==="frances"){
+    const cuota=i===0?amount/n:F.pmt(amount,i,n);
+    for(let k=1;k<=n;k++){ const int=saldo*i, am=cuota-int; saldo-=am; rows.push({k,cuota,int,am,saldo:Math.max(saldo,0)}); totCuotas+=cuota; totInt+=int; }
+  } else if(sys==="aleman"){
+    const am=amount/n;
+    for(let k=1;k<=n;k++){ const int=saldo*i, cuota=am+int; saldo-=am; rows.push({k,cuota,int,am,saldo:Math.max(saldo,0)}); totCuotas+=cuota; totInt+=int; }
+  } else {
+    const int=amount*i;
+    for(let k=1;k<=n;k++){ const am=k===n?amount:0, cuota=int+(k===n?amount:0); saldo=k===n?0:amount; rows.push({k,cuota,int,am,saldo}); totCuotas+=cuota; totInt+=int; }
+  }
+  Util.setR("loan-result",`<strong>Resumen:</strong>`+Util.metric("Total cuotas",`$${Util.fmt(totCuotas)}`)+Util.metric("Total intereses",`$${Util.fmt(totInt)}`)+Util.metric("Sistema",sys.toUpperCase()));
+  let tbl=`<table class="amort-table"><thead><tr><th>#</th><th>Cuota</th><th>Interés</th><th>Amort.</th><th>Saldo</th></tr></thead><tbody>`;
+  rows.forEach(r=>tbl+=`<tr><td>${r.k}</td><td>$${Util.fmt(r.cuota)}</td><td>$${Util.fmt(r.int)}</td><td>$${Util.fmt(r.am)}</td><td>$${Util.fmt(r.saldo)}</td></tr>`);
+  tbl+=`</tbody><tfoot><tr><td>Total</td><td>$${Util.fmt(totCuotas)}</td><td>$${Util.fmt(totInt)}</td><td>$${Util.fmt(amount)}</td><td>—</td></tr></tfoot></table>`;
+  Util.$("loan-table-wrapper").innerHTML=tbl;
+});
+ 
+/* ===== PF vs UVA ===== */
+document.getElementById("btn-pf-uva")?.addEventListener("click",()=>{
+  const monto=Util.getN("pf-monto"), tna=Util.getN("pf-tna"), infl=Util.getN("pf-inflacion"), plus=Util.getN("pf-plus",true)||0, dias=Util.getN("pf-dias");
+  const inv=[]; if(isNaN(monto)) inv.push("pf-monto"); if(isNaN(tna)) inv.push("pf-tna"); if(isNaN(infl)) inv.push("pf-inflacion"); if(isNaN(dias)||dias<=0) inv.push("pf-dias");
+  if(inv.length){ inv.forEach(Util.markErr); return Util.setR("pf-uva-result","👀 Completá monto, TNA, inflación y días."); }
+  const intPF=(tna/100)*(dias/365), montoPF=monto*(1+intPF);
+  const inflPer=Math.pow(1+infl/100,dias/365)-1;
+  const tasaUVA=(1+infl/100)*(1+plus/100)-1, tasaUVAPer=Math.pow(1+tasaUVA,dias/365)-1;
+  const montoUVA=monto*(1+tasaUVAPer);
+  const factor=1+inflPer, realPF=montoPF/factor, realUVA=montoUVA/factor;
+  const ganador=montoPF>montoUVA?"PF tradicional":"PF UVA";
+  Util.setR("pf-uva-result",
+    `<strong>Comparación a ${dias} días</strong>`+
+    Util.metric("PF tradicional (nominal)",`$${Util.fmt(montoPF)}`)+
+    Util.metric("PF UVA (nominal est.)",`$${Util.fmt(montoUVA)}`)+
+    Util.metric("PF tradicional (real)",`$${Util.fmt(realPF)}`)+
+    Util.metric("PF UVA (real)",`$${Util.fmt(realUVA)}`)+
+    `<span class="ok">✓ Gana nominal: ${ganador}</span><br><span style="font-size:.8rem;color:var(--muted)">Supuesto: inflación y TNA constantes.</span>`
+  );
+  // bar chart
+  const svg=Util.$("pf-uva-chart"); if(!svg) return;
+  const labels=["PF nominal","UVA nominal","PF real","UVA real"];
+  const values=[montoPF,montoUVA,realPF,realUVA];
+  const {w,h,pad}=drawAxes(svg,36,"","Monto");
+  const maxV=Math.max(...values), xS=mkScale(0,4,pad,w-pad), yS=mkScale(0,maxV,h-pad,pad);
+  values.forEach((val,i)=>{
+    const x=pad+i*(w-2*pad)/4+4, bw=(w-2*pad)/4-8, y=yS(val);
+    const rect=document.createElementNS("http://www.w3.org/2000/svg","rect");
+    rect.setAttribute("x",x); rect.setAttribute("y",y); rect.setAttribute("width",bw); rect.setAttribute("height",Math.max(1,h-pad-y)); rect.setAttribute("fill",i<2?"#38bdf8":"#f59e0b"); rect.setAttribute("rx","4"); svg.appendChild(rect);
+    svgText(svg,x+bw/2,h-pad+12,labels[i]);
+  });
+});
+ 
+/* ===== SIMULADOR ===== */
+document.getElementById("btn-sim")?.addEventListener("click",()=>{
+  const pvI=Util.getN("sim-pv")||0, aFijo=Util.getN("sim-pmt",true)||0, rate=Util.getN("sim-rate"), rawN=Util.getN("sim-n",true)||0;
+  const aVarsRaw=Util.$("sim-aportes")?.value||"";
+  if(isNaN(rate)){ Util.markErr("sim-rate"); return Util.setR("sim-result","👀 Ingresá la tasa."); }
+  const i=rate/100;
+  let lista=aVarsRaw.split(/[\n,;]+/g).map(s=>parseFloat(s.trim())).filter(v=>!isNaN(v));
+  if(!lista.length) lista=Array.from({length:rawN},()=>aFijo);
+  if(!lista.length) return Util.setR("sim-result","👀 Ingresá aportes o n.");
+  const fvI=F.fv(pvI,i,lista.length), fvA=F.fvAportes(lista,i), fvTotal=fvI+fvA;
+  const totalAp=(pvI||0)+lista.reduce((a,v)=>a+v,0);
+  Util.setR("sim-result",`<strong>FV total: $${Util.fmt(fvTotal)}</strong>`+Util.metric("Total aportado",`$${Util.fmt(totalAp)}`)+Util.metric("Ganancia",`$${Util.fmt(fvTotal-totalAp)}`));
+  // chart
+  const svg=Util.$("sim-chart"); if(!svg) return;
+  let acc=pvI||0; const series=lista.map((a,k)=>{ acc=acc*(1+i)+a; return {t:k+1,v:acc}; });
+  const {w,h,pad}=drawAxes(svg,32,"Período","Acumulado");
+  const ts=series.map(s=>s.t), vs=series.map(s=>s.v);
+  const xS=mkScale(Math.min(...ts),Math.max(...ts),pad,w-pad), yS=mkScale(0,Math.max(...vs),h-pad,pad);
+  polyline(svg,series.map(s=>[xS(s.t),yS(s.v)]),"#10b981",2);
+  series.forEach(s=>dot(svg,xS(s.t),yS(s.v),3,"#10b981"));
+});
+ 
+/* ===== OBJETIVOS ===== */
+document.getElementById("btn-obj")?.addEventListener("click",()=>{
+  const fvO=Util.getN("obj-fv"), pvI=Util.getN("obj-pv",true)||0, rate=Util.getN("obj-rate"), n=Util.getN("obj-n");
+  const inv=[]; if(isNaN(fvO)) inv.push("obj-fv"); if(isNaN(rate)) inv.push("obj-rate"); if(isNaN(n)||n<=0) inv.push("obj-n");
+  if(inv.length){ inv.forEach(Util.markErr); return Util.setR("obj-result","👀 Completá FV, tasa y n."); }
+  const i=rate/100, fvI=pvI>0?F.fv(pvI,i,n):0;
+  const pmtNec=i===0?(fvO-fvI)/n:((fvO-fvI)*i)/(Math.pow(1+i,n)-1);
+  Util.setR("obj-result",`<strong>Aporte por período: $${Util.fmt(pmtNec)}</strong>`+Util.metric("Objetivo (FV)",`$${Util.fmt(fvO)}`)+Util.metric("n períodos",n)+Util.metric("Tasa por período",rate+"%"));
+});
+ 
+</script>
 </body>
 </html>
+
+
