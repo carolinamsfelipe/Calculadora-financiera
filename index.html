@@ -23,7 +23,7 @@
     .brand { font-size:.8rem; color:var(--brand); letter-spacing:.12em; text-transform:uppercase; }
     .tag { display:inline-block; padding:2px 8px; border-radius:999px; border:1px solid rgba(148,163,184,.5); font-size:.7rem; text-transform:uppercase; letter-spacing:.05em; margin-left:6px; }
     #theme-toggle { margin:10px auto; display:block; max-width:200px; }
- 
+
     /* NAV TABS */
     .tabs { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:18px; }
     .tab-btn { padding:7px 14px; border-radius:999px; border:1px solid var(--border); background:transparent; color:var(--muted); font-size:.85rem; cursor:pointer; transition:all .15s; }
@@ -31,7 +31,7 @@
     .tab-btn.active { background:linear-gradient(135deg,var(--accent1),var(--accent2)); color:#fff; border-color:transparent; }
     .tab-panel { display:none; }
     .tab-panel.active { display:block; }
- 
+
     .cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:16px; }
     .card { background:var(--card); border-radius:16px; padding:18px; box-shadow:0 10px 30px rgba(0,0,0,.25); border:1px solid var(--border); }
     .card h2 { margin-top:0; margin-bottom:4px; font-size:1.05rem; }
@@ -70,6 +70,32 @@
     .sens-base { background:rgba(56,189,248,.18); color:#7dd3fc; }
     .flash { animation:flashBg 1.6s ease-out; }
     @keyframes flashBg { 0%{box-shadow:0 0 0 0 var(--flash);} 30%{box-shadow:0 0 0 8px var(--flash);} 100%{box-shadow:0 0 0 0 transparent;} }
+
+    /* EXPLORADOR */
+    .expl-bar { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px; align-items:center; }
+    .expl-bar input, .expl-bar select { flex:1; min-width:130px; max-width:200px; }
+    .expl-status { font-size:.78rem; color:var(--muted); margin-bottom:8px; min-height:16px; }
+    .bond-table { width:100%; border-collapse:collapse; font-size:.83rem; }
+    .bond-table th { text-align:left; padding:7px 8px; border-bottom:1px solid rgba(148,163,184,.2); color:var(--muted); font-size:.75rem; text-transform:uppercase; letter-spacing:.05em; }
+    .bond-table td { padding:7px 8px; border-bottom:1px solid rgba(148,163,184,.07); vertical-align:middle; }
+    .bond-table tbody tr:hover { background:rgba(56,189,248,.06); cursor:pointer; }
+    .b-ticker { font-weight:700; color:var(--accent1); letter-spacing:.04em; }
+    .b-nombre { color:var(--muted); font-size:.78rem; }
+    .b-up { color:#22c55e; font-weight:600; }
+    .b-dn { color:#ef4444; font-weight:600; }
+    .b-badge { display:inline-block; padding:1px 6px; border-radius:999px; font-size:.7rem; font-weight:600; }
+    .bb-usd { background:rgba(56,189,248,.15); color:#7dd3fc; }
+    .bb-ars { background:rgba(250,204,21,.12); color:#fde68a; }
+    .bb-dl  { background:rgba(34,197,94,.12); color:#86efac; }
+    .bb-ny  { background:rgba(139,92,246,.15); color:#c4b5fd; }
+    .bb-arg { background:rgba(148,163,184,.12); color:#cbd5e1; }
+    .btn-load { margin-top:0; width:auto; padding:6px 14px; font-size:.8rem; }
+    /* Ticker autoload en cards de bonos */
+    .ticker-row { display:flex; gap:8px; align-items:flex-end; margin-top:8px; }
+    .ticker-row input { flex:1; }
+    .ticker-row button { margin-top:0; width:auto; padding:7px 14px; font-size:.82rem; border-radius:999px; }
+    .live-badge { display:inline-block; padding:2px 8px; border-radius:999px; font-size:.72rem; background:rgba(34,197,94,.15); color:#86efac; border:1px solid rgba(34,197,94,.3); margin-left:6px; }
+
     .footer-note { margin-top:24px; text-align:center; font-size:.8rem; color:var(--muted); line-height:1.6; }
   </style>
 </head>
@@ -81,19 +107,20 @@
     <div class="brand">by Carolina Sinead Felipe</div>
     <button id="theme-toggle">🌗 Cambiar tema</button>
   </header>
- 
+
   <!-- TABS NAV -->
   <div class="tabs">
-    <button class="tab-btn active" data-tab="basicos">💰 Básicos</button>
+    <button class="tab-btn" data-tab="basicos">💰 Básicos</button>
     <button class="tab-btn" data-tab="bonos">📊 Bonos (Precio & Rendimiento)</button>
     <button class="tab-btn" data-tab="sensibilidad">📉 Sensibilidad & Duración</button>
     <button class="tab-btn" data-tab="curvas">📈 Curvas & Forward</button>
     <button class="tab-btn" data-tab="proyectos">🏗️ Proyectos & Créditos</button>
+    <button class="tab-btn active" data-tab="explorador">🔍 Explorador de Bonos</button>
     <button class="tab-btn" data-tab="ahorro">🏦 Ahorro & Plazo Fijo</button>
   </div>
- 
+
   <!-- ===== TAB: BÁSICOS ===== -->
-  <div class="tab-panel active" id="tab-basicos">
+  <div class="tab-panel" id="tab-basicos">
     <div class="cards">
       <!-- Conversor tasas -->
       <section class="card">
@@ -112,7 +139,7 @@
         <button id="btn-rate-convert">Convertir</button>
         <div class="result" id="rate-result">Ingresá una tasa…</div>
       </section>
- 
+
       <!-- FV -->
       <section class="card">
         <h2>Valor Futuro (FV)</h2><small>FV = PV · (1+i)ⁿ</small>
@@ -125,7 +152,7 @@
         <button id="btn-fv">Calcular FV</button>
         <div class="result" id="fv-result">Ingresá datos…</div>
       </section>
- 
+
       <!-- PV -->
       <section class="card">
         <h2>Valor Presente (PV)</h2><small>PV = FV / (1+i)ⁿ</small>
@@ -138,7 +165,7 @@
         <button id="btn-pv">Calcular PV</button>
         <div class="result" id="pv-result">Ingresá datos…</div>
       </section>
- 
+
       <!-- PMT -->
       <section class="card">
         <h2>Cuota (PMT)</h2><small>PMT = PV · i / (1−(1+i)⁻ⁿ)</small>
@@ -151,7 +178,7 @@
         <button id="btn-pmt">Calcular PMT</button>
         <div class="result" id="pmt-result">Ingresá datos…</div>
       </section>
- 
+
       <!-- Tipo de cambio -->
       <section class="card">
         <h2>Tipo de cambio</h2>
@@ -184,11 +211,11 @@
       </section>
     </div>
   </div>
- 
+
   <!-- ===== TAB: BONOS ===== -->
   <div class="tab-panel" id="tab-bonos">
     <div class="cards">
- 
+
       <!-- Precio Limpio / Sucio / Interés Corrido -->
       <section class="card">
         <h2>🥇 Precio Limpio · Sucio · Interés Corrido</h2>
@@ -205,7 +232,7 @@
         <button id="btn-cs">Calcular</button>
         <div class="result" id="cs-result">Ingresá parámetros…</div>
       </section>
- 
+
       <!-- Current Yield -->
       <section class="card">
         <h2>🥈 Current Yield & Relación con TIR</h2>
@@ -225,11 +252,13 @@
         <button id="btn-cy">Calcular</button>
         <div class="result" id="cy-result">Ingresá parámetros…</div>
       </section>
- 
+
       <!-- TIR desde Precio -->
       <section class="card">
         <h2>TIR de un bono desde precio de mercado</h2>
         <small>Calcula el YTM implícito en el precio. Bisección numérica (200 iter, precisión 1e-8).</small>
+        <div class="ticker-row"><input id="ytm-ticker" placeholder="Ticker (ej: AL30)" style="text-transform:uppercase"/><button id="btn-ytm-load">⬇ Traer precio live</button></div>
+        <div class="result" id="ytm-live-badge" style="display:none;margin-top:6px;padding:6px 10px;font-size:.8rem"></div>
         <div class="row">
           <div><label>Valor Nominal / Face</label><input id="ytm-face" type="number" placeholder="Ej: 100" /></div>
           <div><label>Precio de mercado</label><input id="ytm-price" type="number" step="0.01" placeholder="Ej: 92.5" /></div>
@@ -245,7 +274,7 @@
         <button id="btn-ytm">Calcular TIR / YTM</button>
         <div class="result" id="ytm-result">Ingresá datos del bono…</div>
       </section>
- 
+
       <!-- Precio teórico desde YTM -->
       <section class="card">
         <h2>Precio teórico de un bono</h2>
@@ -264,7 +293,7 @@
         <button id="btn-pb">Calcular precio</button>
         <div class="result" id="pb-result">Ingresá parámetros…</div>
       </section>
- 
+
       <!-- Paridad -->
       <section class="card">
         <h2>Paridad de bonos</h2>
@@ -276,14 +305,14 @@
         <button id="btn-par">Calcular paridad</button>
         <div class="result" id="par-result">Ingresá VT y precio…</div>
       </section>
- 
+
     </div>
   </div>
- 
+
   <!-- ===== TAB: SENSIBILIDAD & DURACIÓN ===== -->
   <div class="tab-panel" id="tab-sensibilidad">
     <div class="cards">
- 
+
       <!-- Duración completa + Sensibilidad -->
       <section class="card">
         <h2>📉 Duration, DV01, Convexidad & Sensibilidad</h2>
@@ -303,7 +332,7 @@
         <button id="btn-duration">Calcular Duration & Sensibilidad</button>
         <div class="result" id="duration-result">Ingresá parámetros…</div>
       </section>
- 
+
       <!-- Curva simple -->
       <section class="card">
         <h2>Curva de rendimientos (Yield Curve)</h2>
@@ -315,14 +344,14 @@ TX26; 1.5; 0; 98; ; 100"></textarea>
         <div class="result" id="curva-result">Cargá bonos…</div>
         <svg id="curva-chart" class="chart"></svg>
       </section>
- 
+
     </div>
   </div>
- 
+
   <!-- ===== TAB: CURVAS & FORWARD ===== -->
   <div class="tab-panel" id="tab-curvas">
     <div class="cards">
- 
+
       <!-- Bootstrapping spot -->
       <section class="card">
         <h2>🏅 Bootstrapping de tasas spot</h2>
@@ -335,7 +364,7 @@ TX26; 1.5; 0; 98; ; 100"></textarea>
         <div class="result" id="boot-result">Ingresá bonos para calcular…</div>
         <svg id="boot-chart" class="chart"></svg>
       </section>
- 
+
       <!-- Forward rates -->
       <section class="card">
         <h2>🏅 Forward Rates implícitas</h2>
@@ -351,14 +380,14 @@ TX26; 1.5; 0; 98; ; 100"></textarea>
         <button id="btn-fw">Calcular forward rate</button>
         <div class="result" id="fw-result">Ingresá las tasas spot…</div>
       </section>
- 
+
     </div>
   </div>
- 
+
   <!-- ===== TAB: PROYECTOS & CRÉDITOS ===== -->
   <div class="tab-panel" id="tab-proyectos">
     <div class="cards">
- 
+
       <!-- VAN / TIR -->
       <section class="card">
         <h2>VAN y TIR — Proyectos</h2>
@@ -370,7 +399,7 @@ TX26; 1.5; 0; 98; ; 100"></textarea>
         <div class="result" id="van-tir-result">Ingresá tasa y flujos…</div>
         <svg id="van-chart" class="chart"></svg>
       </section>
- 
+
       <!-- Amortización -->
       <section class="card">
         <h2>Créditos — Tabla de amortización</h2>
@@ -385,14 +414,54 @@ TX26; 1.5; 0; 98; ; 100"></textarea>
         <div class="result" id="loan-result">Completá los datos…</div>
         <div id="loan-table-wrapper"></div>
       </section>
- 
+
     </div>
   </div>
- 
+
+
+  <!-- ===== TAB: EXPLORADOR DE BONOS ===== -->
+  <div class="tab-panel active" id="tab-explorador">
+    <div class="card" style="max-width:100%">
+      <h2>🔍 Explorador de Bonos ARG <span class="live-badge">● LIVE</span></h2>
+      <small>Precios en tiempo real · ArgentinaDatos API · Hacé clic en un bono para cargarlo en la calculadora</small>
+
+      <div class="expl-bar">
+        <input id="expl-q" placeholder="Buscar ticker o nombre…" style="max-width:220px"/>
+        <select id="expl-moneda" style="max-width:160px">
+          <option value="">Moneda: Todas</option>
+          <option value="USD">USD</option>
+          <option value="ARS">ARS / CER</option>
+          <option value="ARS-DL">Dólar Linked</option>
+        </select>
+        <select id="expl-ley" style="max-width:140px">
+          <option value="">Ley: Todas</option>
+          <option value="ARG">ARG</option>
+          <option value="NY">Nueva York</option>
+        </select>
+        <button class="btn-load" id="btn-expl-refresh">⟳ Actualizar</button>
+      </div>
+      <div class="expl-status" id="expl-status">Cargando precios…</div>
+
+      <div style="overflow-x:auto">
+        <table class="bond-table">
+          <thead>
+            <tr>
+              <th>Ticker</th><th>Nombre</th><th>Moneda</th><th>Ley</th>
+              <th>Cupón%</th><th>Vto.</th><th>Precio live</th><th>Var%</th><th></th>
+            </tr>
+          </thead>
+          <tbody id="expl-tbody">
+            <tr><td colspan="9" style="text-align:center;padding:30px;color:var(--muted)">⏳ Cargando…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
   <!-- ===== TAB: AHORRO & PF ===== -->
   <div class="tab-panel" id="tab-ahorro">
     <div class="cards">
- 
+
       <!-- Comparador PF vs UVA -->
       <section class="card">
         <h2>Comparador PF vs UVA</h2>
@@ -410,7 +479,7 @@ TX26; 1.5; 0; 98; ; 100"></textarea>
         <div class="result" id="pf-uva-result">Ingresá datos…</div>
         <svg id="pf-uva-chart" class="chart"></svg>
       </section>
- 
+
       <!-- Simulador aportes -->
       <section class="card">
         <h2>Simulador con aportes variables</h2>
@@ -427,7 +496,7 @@ TX26; 1.5; 0; 98; ; 100"></textarea>
         <div class="result" id="sim-result">Cargá tasa y aportes…</div>
         <svg id="sim-chart" class="chart"></svg>
       </section>
- 
+
       <!-- Plan ahorro objetivos -->
       <section class="card">
         <h2>Plan de ahorro para objetivos</h2>
@@ -441,16 +510,71 @@ TX26; 1.5; 0; 98; ; 100"></textarea>
         <button id="btn-obj">Calcular aporte necesario</button>
         <div class="result" id="obj-result">Ingresá objetivo, tasa y n…</div>
       </section>
- 
+
     </div>
   </div>
- 
+
   <div class="footer-note">
-    Herramienta educativa · Carolina Felipe
+    Herramienta educativa · UADE Renta Fija · Mg. Mauro Natalucci
   </div>
 </div>
- 
+
 <script type="module">
+/* ===== DATASET BONOS ARG ===== */
+const BONOS_ARG = [
+  {ticker:"AL29", nombre:"BONO ARG USD 1.0% 2029",    moneda:"USD",    ley:"ARG", cupon:1.0,   vto:"2029-07-09", freq:2,  face:100},
+  {ticker:"AL30", nombre:"BONO ARG USD 0.5% 2030",    moneda:"USD",    ley:"ARG", cupon:0.5,   vto:"2030-07-09", freq:2,  face:100},
+  {ticker:"AL35", nombre:"BONO ARG USD 3.625% 2035",  moneda:"USD",    ley:"ARG", cupon:3.625, vto:"2035-07-09", freq:2,  face:100},
+  {ticker:"AL41", nombre:"BONO ARG USD 4.25% 2041",   moneda:"USD",    ley:"ARG", cupon:4.25,  vto:"2041-07-09", freq:2,  face:100},
+  {ticker:"GD29", nombre:"BONO ARG USD 1.0% 2029 NY", moneda:"USD",    ley:"NY",  cupon:1.0,   vto:"2029-07-09", freq:2,  face:100},
+  {ticker:"GD30", nombre:"BONO ARG USD 0.75% 2030 NY",moneda:"USD",    ley:"NY",  cupon:0.75,  vto:"2030-01-09", freq:2,  face:100},
+  {ticker:"GD35", nombre:"BONO ARG USD 3.625% 2035 NY",moneda:"USD",   ley:"NY",  cupon:3.625, vto:"2035-07-09", freq:2,  face:100},
+  {ticker:"GD38", nombre:"BONO ARG USD 3.5% 2038 NY", moneda:"USD",    ley:"NY",  cupon:3.5,   vto:"2038-01-09", freq:2,  face:100},
+  {ticker:"GD41", nombre:"BONO ARG USD 4.25% 2041 NY",moneda:"USD",    ley:"NY",  cupon:4.25,  vto:"2041-07-09", freq:2,  face:100},
+  {ticker:"GD46", nombre:"BONO ARG USD 3.625% 2046 NY",moneda:"USD",   ley:"NY",  cupon:3.625, vto:"2046-07-09", freq:2,  face:100},
+  {ticker:"AO27", nombre:"BONO ARG USD 6% 2027",      moneda:"USD",    ley:"ARG", cupon:6.0,   vto:"2027-10-28", freq:12, face:100},
+  {ticker:"AE38", nombre:"BONO ARG USD 3.875% 2038",  moneda:"USD",    ley:"ARG", cupon:3.875, vto:"2038-01-09", freq:2,  face:100},
+  {ticker:"TX26", nombre:"BONCER TX26",               moneda:"ARS",    ley:"ARG", cupon:2.0,   vto:"2026-11-09", freq:2,  face:100},
+  {ticker:"TX28", nombre:"BONCER TX28",               moneda:"ARS",    ley:"ARG", cupon:2.0,   vto:"2028-03-13", freq:2,  face:100},
+  {ticker:"TX30", nombre:"BONCER TX30",               moneda:"ARS",    ley:"ARG", cupon:2.0,   vto:"2030-03-13", freq:2,  face:100},
+  {ticker:"TV25", nombre:"TV25 Dólar Linked",         moneda:"ARS-DL", ley:"ARG", cupon:0.0,   vto:"2025-04-30", freq:2,  face:100},
+  {ticker:"TZV25",nombre:"TZV25 Dólar Linked",        moneda:"ARS-DL", ley:"ARG", cupon:0.0,   vto:"2025-07-31", freq:2,  face:100},
+];
+
+/* ===== LIVE PRICE CACHE ===== */
+let _preciosCache = null, _preciosCacheTs = 0;
+const CACHE_TTL = 5 * 60 * 1000;
+
+async function fetchPreciosLive() {
+  const now = Date.now();
+  if (_preciosCache && (now - _preciosCacheTs) < CACHE_TTL) return _preciosCache;
+  try {
+    const r = await fetch("https://api.argentinadatos.com/v1/finanzas/bonos");
+    if (!r.ok) throw new Error(r.status);
+    _preciosCache = await r.json();
+    _preciosCacheTs = now;
+    return _preciosCache;
+  } catch(e) {
+    return _preciosCache || [];
+  }
+}
+
+async function getPrecioTicker(ticker) {
+  const data = await fetchPreciosLive();
+  const item = data.find(b => b.ticker?.toUpperCase() === ticker.toUpperCase());
+  if (!item) return null;
+  return {
+    precio: parseFloat(item.ultimo ?? item.precio ?? 0),
+    variacion: parseFloat(item.variacion ?? 0),
+    fechaHora: item.fechaHora ?? "—",
+  };
+}
+
+function getAnios(vtoStr) {
+  const hoy = new Date(), vto = new Date(vtoStr);
+  return Math.max(0.01, (vto - hoy) / (1000*60*60*24*365.25));
+}
+
 /* ===== UTIL ===== */
 const Util = (() => {
   const $ = id => document.getElementById(id);
@@ -463,20 +587,20 @@ const Util = (() => {
   const metric = (label, value) => `<div class="row-metric"><span class="metric-label">${label}</span><span class="metric-value">${value}</span></div>`;
   return { $, fmt, fmtPct, fmtPctRaw, getN, markErr, setR, metric };
 })();
- 
+
 /* ===== FINANCE CORE (shared, no side-effects) ===== */
 const F = (() => {
   const fv = (pv, i, n) => pv * Math.pow(1+i, n);
   const pv = (fvV, i, n) => fvV / Math.pow(1+i, n);
   const pmt = (pvV, i, n) => i===0 ? pvV/n : (pvV*i)/(1-Math.pow(1+i,-n));
   const npv = (r, cfs) => cfs.reduce((acc,cf,t)=>acc+cf/Math.pow(1+r,t), 0);
- 
+
   // Bond price: standard DCF
   const bondPrice = ({face=100, couponPct=0, ytmPct, years, freq=2}) => {
     const m=freq, n=Math.round(years*m), c=(couponPct/100)*face/m, y=ytmPct/100/m;
     let p=0; for(let t=1;t<=n;t++) p+=c/Math.pow(1+y,t); p+=face/Math.pow(1+y,n); return p;
   };
- 
+
   // Bond YTM from price — bisection
   const bondYTM = ({face=100, price, couponPct=0, years, freq=2}) => {
     const m=freq, n=Math.round(years*m), c=(couponPct/100)*face/m;
@@ -491,7 +615,7 @@ const F = (() => {
     }
     return (a+b)/2;
   };
- 
+
   // Macaulay + Modified duration
   const bondDuration = ({face=100, price, couponPct=0, ytmPct, years, freq=2}) => {
     const m=freq, n=Math.round(years*m), c=(couponPct/100)*face/m, y=ytmPct/100/m;
@@ -504,7 +628,7 @@ const F = (() => {
     const modified=macaulay/(1+y); // equivalent: macaulay/(1+ytmAnnual/m) when using period y
     return {macaulay, modified};
   };
- 
+
   // Convexity (annual)
   const bondConvexity = ({face=100, price, couponPct=0, ytmPct, years, freq=2}) => {
     const m=freq, n=Math.round(years*m), c=(couponPct/100)*face/m, y=ytmPct/100/m;
@@ -515,7 +639,7 @@ const F = (() => {
     }
     return price>0 ? (sum/price)/(m*m) : NaN;
   };
- 
+
   // IRR — grid + bisection
   const irr = cfs => {
     const npvFn = r => cfs.reduce((acc,cf,t)=>acc+cf/Math.pow(1+r,t),0);
@@ -534,12 +658,12 @@ const F = (() => {
     }
     return (a+b)/2;
   };
- 
+
   const fvAportes = (list, i) => { const n=list.length; let t=0; for(let k=1;k<=n;k++) t+=(list[k-1]||0)*Math.pow(1+i,n-k); return t; };
- 
+
   return { fv, pv, pmt, npv, bondPrice, bondYTM, bondDuration, bondConvexity, irr, fvAportes };
 })();
- 
+
 /* ===== SVG CHARTS ===== */
 function drawAxes(svg, pad=30, xLabel="", yLabel=""){
   const w=svg.clientWidth||600, h=svg.clientHeight||220;
@@ -566,7 +690,7 @@ function svgText(svg, x, y, txt, anchor="middle"){
   const el=document.createElementNS("http://www.w3.org/2000/svg","text");
   el.setAttribute("x",x); el.setAttribute("y",y); el.setAttribute("text-anchor",anchor); el.textContent=txt; svg.appendChild(el);
 }
- 
+
 /* ===== TAB ROUTING ===== */
 document.querySelectorAll(".tab-btn").forEach(btn=>{
   btn.addEventListener("click",()=>{
@@ -576,10 +700,10 @@ document.querySelectorAll(".tab-btn").forEach(btn=>{
     document.getElementById("tab-"+btn.dataset.tab)?.classList.add("active");
   });
 });
- 
+
 /* ===== THEME ===== */
 document.getElementById("theme-toggle")?.addEventListener("click",()=>document.body.classList.toggle("light"));
- 
+
 /* ===== CONVERSOR TASAS (mejorado: incluye TES) ===== */
 document.getElementById("btn-rate-convert")?.addEventListener("click",()=>{
   const type=Util.$("rate-type").value, r=Util.getN("rate-input"), freq=parseInt(Util.$("rate-freq").value)||12;
@@ -598,7 +722,7 @@ document.getElementById("btn-rate-convert")?.addEventListener("click",()=>{
     `<span style="font-size:.8rem;color:var(--muted)">Cap. ${freq} per./año para TNA</span>`
   );
 });
- 
+
 /* ===== FV ===== */
 document.getElementById("btn-fv")?.addEventListener("click",()=>{
   const pv=Util.getN("fv-pv"), i=Util.getN("fv-rate")/100, n=Util.getN("fv-n");
@@ -606,7 +730,7 @@ document.getElementById("btn-fv")?.addEventListener("click",()=>{
   const fvVal=F.fv(pv,i,n);
   Util.setR("fv-result",`<strong>Valor Futuro: $${Util.fmt(fvVal)}</strong>`+Util.metric("PV",`$${Util.fmt(pv)}`)+Util.metric("Ganancia",`$${Util.fmt(fvVal-pv)}`)+Util.metric("Rendimiento total",Util.fmtPctRaw(((fvVal-pv)/pv)*100,2)+"%"));
 });
- 
+
 /* ===== PV ===== */
 document.getElementById("btn-pv")?.addEventListener("click",()=>{
   const fvV=Util.getN("pv-fv"), i=Util.getN("pv-rate")/100, n=Util.getN("pv-n");
@@ -614,7 +738,7 @@ document.getElementById("btn-pv")?.addEventListener("click",()=>{
   const pvV=F.pv(fvV,i,n);
   Util.setR("pv-result",`<strong>Valor Presente: $${Util.fmt(pvV)}</strong>`+Util.metric("FV",`$${Util.fmt(fvV)}`)+Util.metric("Descuento",(fvV-pvV).toLocaleString("es-AR",{style:"currency",currency:"ARS"})));
 });
- 
+
 /* ===== PMT ===== */
 document.getElementById("btn-pmt")?.addEventListener("click",()=>{
   const pvV=Util.getN("pmt-pv"), i=Util.getN("pmt-rate")/100, n=Util.getN("pmt-n");
@@ -622,14 +746,14 @@ document.getElementById("btn-pmt")?.addEventListener("click",()=>{
   const pmtV=F.pmt(pvV,i,n), total=pmtV*n;
   Util.setR("pmt-result",`<strong>Cuota: $${Util.fmt(pmtV)}</strong>`+Util.metric("Total pagado",`$${Util.fmt(total)}`)+Util.metric("Intereses totales",`$${Util.fmt(total-pvV)}`)+Util.metric("Costo financiero",Util.fmtPctRaw(((total-pvV)/pvV)*100,2)+"%"));
 });
- 
+
 /* ===== TIPO DE CAMBIO ===== */
 (function wireTipoCambio(){
   const tipoSel=Util.$("tc-tipo"), btnAuto=Util.$("btn-tc-auto"), cotizEl=Util.$("tc-cotizacion"), result=Util.$("tc-result"), dirSel=Util.$("tc-direccion");
   if(!tipoSel||!btnAuto) return;
   const isAuto=v=>v&&v.endsWith("-auto");
   tipoSel.addEventListener("change",()=>{ btnAuto.style.display=isAuto(tipoSel.value)?"block":"none"; if(isAuto(tipoSel.value)) cotizEl.value=""; });
- 
+
   async function fetchCotiz(){
     const tipo=tipoSel.value, dir=dirSel.value;
     result.innerHTML="⏳ Consultando…";
@@ -653,7 +777,7 @@ document.getElementById("btn-pmt")?.addEventListener("click",()=>{
     }
     result.innerHTML="⚠️ No se pudo obtener cotización automática. Ingresá manualmente.";
   }
- 
+
   btnAuto.addEventListener("click",fetchCotiz);
   Util.$("btn-tc")?.addEventListener("click",async()=>{
     const monto=Util.getN("tc-monto"), dir=dirSel.value;
@@ -666,7 +790,7 @@ document.getElementById("btn-pmt")?.addEventListener("click",()=>{
     Util.setR("tc-result",`<strong>${Util.fmt(monto)} ${de} = ${Util.fmt(res,4)} ${a}</strong>` + Util.metric("Cotización usada",`$${Util.fmt(cotiz)} ARS/USD`));
   });
 })();
- 
+
 /* ===== CLEAN/DIRTY / ACCRUED INTEREST ===== */
 document.getElementById("btn-cs")?.addEventListener("click",()=>{
   const vr=Util.getN("cs-vr"), coupon=Util.getN("cs-coupon"), diasAC=Util.getN("cs-dias-ac"), diasPer=Util.getN("cs-dias-periodo");
@@ -688,7 +812,7 @@ document.getElementById("btn-cs")?.addEventListener("click",()=>{
     `<span style="font-size:.8rem;color:var(--muted)">IC = VR × C% × (diasAC / diasPer)</span>`+rel
   );
 });
- 
+
 /* ===== CURRENT YIELD ===== */
 document.getElementById("btn-cy")?.addEventListener("click",()=>{
   const face=Util.getN("cy-face"), price=Util.getN("cy-price"), coupon=Util.getN("cy-coupon");
@@ -713,7 +837,7 @@ document.getElementById("btn-cy")?.addEventListener("click",()=>{
     `<span class="ok" style="font-size:.85rem">${relacion}</span>`
   );
 });
- 
+
 /* ===== TIR DESDE PRECIO ===== */
 document.getElementById("btn-ytm")?.addEventListener("click",()=>{
   const face=Util.getN("ytm-face"), price=Util.getN("ytm-price"), coupon=Util.getN("ytm-coupon"), years=Util.getN("ytm-years");
@@ -733,7 +857,7 @@ document.getElementById("btn-ytm")?.addEventListener("click",()=>{
     `<span style="font-size:.8rem;color:var(--muted)">Bisección 300 iter., precisión 1e-9</span>`
   );
 });
- 
+
 /* ===== PRECIO TEÓRICO ===== */
 document.getElementById("btn-pb")?.addEventListener("click",()=>{
   const face=Util.getN("pb-face"), ytm=Util.getN("pb-ytm"), coupon=Util.getN("pb-coupon"), years=Util.getN("pb-years");
@@ -750,7 +874,7 @@ document.getElementById("btn-pb")?.addEventListener("click",()=>{
     `<span style="font-size:.9rem">${estadoBono}</span>`
   );
 });
- 
+
 /* ===== PARIDAD ===== */
 document.getElementById("btn-par")?.addEventListener("click",()=>{
   const vt=Util.getN("par-vt"), price=Util.getN("par-price");
@@ -759,7 +883,7 @@ document.getElementById("btn-par")?.addEventListener("click",()=>{
   const label=par<99.9?"Bajo la par — descuento":par>100.1?"Sobre la par — prima":"A la par";
   Util.setR("par-result",`<strong>Paridad: ${Util.fmtPctRaw(par)}%</strong><br><span style="color:var(--muted)">${label}</span>`+Util.metric("Precio",`$${Util.fmt(price)}`)+Util.metric("Valor Técnico",`$${Util.fmt(vt)}`));
 });
- 
+
 /* ===== DURATION + DV01 + CONVEXIDAD + SENSIBILIDAD ===== */
 document.getElementById("btn-duration")?.addEventListener("click",()=>{
   const face=Util.getN("dur-face"), price=Util.getN("dur-price"), coupon=Util.getN("dur-coupon"), years=Util.getN("dur-years");
@@ -798,7 +922,7 @@ document.getElementById("btn-duration")?.addEventListener("click",()=>{
     sensHtml
   );
 });
- 
+
 /* ===== CURVA BONOS ===== */
 function parseBondLines(raw){
   return raw.split(/\n+/).map(l=>l.trim()).filter(l=>l.length>0).map(line=>{
@@ -816,7 +940,7 @@ function enrichBond(b){
   const dur=F.bondDuration({face:b.face,price,couponPct:b.couponPct,ytmPct:ytm,years:b.years,freq:b.freq});
   return {...b, ytmPct:ytm, price, macaulay:dur.macaulay};
 }
- 
+
 document.getElementById("btn-curva")?.addEventListener("click",()=>{
   const raw=Util.$("curva-lines")?.value||"";
   const bonds=parseBondLines(raw).map(enrichBond).filter(b=>isFinite(b.macaulay)&&isFinite(b.ytmPct));
@@ -833,7 +957,7 @@ document.getElementById("btn-curva")?.addEventListener("click",()=>{
     svgText(svg,xS(b.macaulay),yS(b.ytmPct)-8,b.ticker);
   });
 });
- 
+
 /* ===== BOOTSTRAPPING SPOT ===== */
 document.getElementById("btn-boot")?.addEventListener("click",()=>{
   const raw=Util.$("boot-lines")?.value||"";
@@ -876,7 +1000,7 @@ document.getElementById("btn-boot")?.addEventListener("click",()=>{
   polyline(svg,spots.map(s=>[xS(s.t),yS(s.spot*100)]),"#a5b4fc",2);
   spots.forEach(s=>{ dot(svg,xS(s.t),yS(s.spot*100),4,"#a5b4fc"); svgText(svg,xS(s.t),yS(s.spot*100)-8,`${(s.spot*100).toFixed(2)}%`); });
 });
- 
+
 /* ===== FORWARD RATES ===== */
 document.getElementById("btn-fw")?.addEventListener("click",()=>{
   const s1=Util.getN("fw-s1")/100, t1=Util.getN("fw-t1"), s2=Util.getN("fw-s2")/100, t2=Util.getN("fw-t2");
@@ -891,7 +1015,7 @@ document.getElementById("btn-fw")?.addEventListener("click",()=>{
     `<span style="font-size:.8rem;color:var(--muted)">f = [(1+s₂)^t₂/(1+s₁)^t₁]^(1/(t₂−t₁)) − 1</span>`
   );
 });
- 
+
 /* ===== VAN / TIR ===== */
 document.getElementById("btn-van-tir")?.addEventListener("click",()=>{
   const tasa=Util.getN("cf-tasa"), raw=Util.$("cf-lista")?.value||"";
@@ -917,7 +1041,7 @@ document.getElementById("btn-van-tir")?.addEventListener("click",()=>{
   // zero line
   const y0=yS(0); if(y0>pad&&y0<h-pad){const l=document.createElementNS("http://www.w3.org/2000/svg","line"); l.setAttribute("x1",pad); l.setAttribute("y1",y0); l.setAttribute("x2",w-pad); l.setAttribute("y2",y0); l.setAttribute("stroke","#475569"); l.setAttribute("stroke-dasharray","4 3"); svg.appendChild(l);}
 });
- 
+
 /* ===== AMORTIZACIÓN ===== */
 document.getElementById("btn-loan")?.addEventListener("click",()=>{
   const amount=Util.getN("loan-amount"), rate=Util.getN("loan-rate"), n=Util.getN("loan-n"), sys=Util.$("loan-system").value;
@@ -939,7 +1063,7 @@ document.getElementById("btn-loan")?.addEventListener("click",()=>{
   tbl+=`</tbody><tfoot><tr><td>Total</td><td>$${Util.fmt(totCuotas)}</td><td>$${Util.fmt(totInt)}</td><td>$${Util.fmt(amount)}</td><td>—</td></tr></tfoot></table>`;
   Util.$("loan-table-wrapper").innerHTML=tbl;
 });
- 
+
 /* ===== PF vs UVA ===== */
 document.getElementById("btn-pf-uva")?.addEventListener("click",()=>{
   const monto=Util.getN("pf-monto"), tna=Util.getN("pf-tna"), infl=Util.getN("pf-inflacion"), plus=Util.getN("pf-plus",true)||0, dias=Util.getN("pf-dias");
@@ -972,7 +1096,7 @@ document.getElementById("btn-pf-uva")?.addEventListener("click",()=>{
     svgText(svg,x+bw/2,h-pad+12,labels[i]);
   });
 });
- 
+
 /* ===== SIMULADOR ===== */
 document.getElementById("btn-sim")?.addEventListener("click",()=>{
   const pvI=Util.getN("sim-pv")||0, aFijo=Util.getN("sim-pmt",true)||0, rate=Util.getN("sim-rate"), rawN=Util.getN("sim-n",true)||0;
@@ -994,7 +1118,7 @@ document.getElementById("btn-sim")?.addEventListener("click",()=>{
   polyline(svg,series.map(s=>[xS(s.t),yS(s.v)]),"#10b981",2);
   series.forEach(s=>dot(svg,xS(s.t),yS(s.v),3,"#10b981"));
 });
- 
+
 /* ===== OBJETIVOS ===== */
 document.getElementById("btn-obj")?.addEventListener("click",()=>{
   const fvO=Util.getN("obj-fv"), pvI=Util.getN("obj-pv",true)||0, rate=Util.getN("obj-rate"), n=Util.getN("obj-n");
@@ -1004,7 +1128,175 @@ document.getElementById("btn-obj")?.addEventListener("click",()=>{
   const pmtNec=i===0?(fvO-fvI)/n:((fvO-fvI)*i)/(Math.pow(1+i,n)-1);
   Util.setR("obj-result",`<strong>Aporte por período: $${Util.fmt(pmtNec)}</strong>`+Util.metric("Objetivo (FV)",`$${Util.fmt(fvO)}`)+Util.metric("n períodos",n)+Util.metric("Tasa por período",rate+"%"));
 });
- 
+
+
+/* ===== EXPLORADOR DE BONOS ===== */
+(async function initExplorador() {
+  const tbody = Util.$("expl-tbody"), status = Util.$("expl-status");
+  let _bonos = [];
+
+  async function cargarExplorador() {
+    if(status) status.textContent = "⏳ Consultando ArgentinaDatos…";
+    const precios = await fetchPreciosLive();
+    const pm = Object.fromEntries(precios.map(p=>[p.ticker?.toUpperCase(), p]));
+    _bonos = BONOS_ARG.map(b=>({
+      ...b,
+      years: getAnios(b.vto),
+      live: pm[b.ticker] || null,
+    }));
+    if(status) status.textContent = `✓ ${new Date().toLocaleTimeString("es-AR")} — ${precios.length} instrumentos · cache 5 min`;
+    renderExpl();
+  }
+
+  function getFiltrosExpl() {
+    return {
+      q: (Util.$("expl-q")?.value||"").toLowerCase(),
+      moneda: Util.$("expl-moneda")?.value||"",
+      ley: Util.$("expl-ley")?.value||"",
+    };
+  }
+
+  function renderExpl() {
+    const {q,moneda,ley} = getFiltrosExpl();
+    const filtered = _bonos.filter(b=>{
+      if(moneda && b.moneda!==moneda) return false;
+      if(ley && b.ley!==ley) return false;
+      if(q && !b.ticker.toLowerCase().includes(q) && !b.nombre.toLowerCase().includes(q)) return false;
+      return true;
+    });
+    if(!tbody) return;
+    if(!filtered.length){ tbody.innerHTML=`<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--muted)">Sin resultados</td></tr>`; return; }
+    const fmt2 = v => isNaN(v)?"—":v.toLocaleString("es-AR",{minimumFractionDigits:2,maximumFractionDigits:2});
+    tbody.innerHTML = filtered.map(b=>{
+      const precio = b.live ? parseFloat(b.live.ultimo??b.live.precio??0) : null;
+      const vari   = b.live ? parseFloat(b.live.variacion??0) : null;
+      const mBadge = b.moneda==="USD"?"bb-usd":b.moneda==="ARS"?"bb-ars":"bb-dl";
+      const lBadge = b.ley==="NY"?"bb-ny":"bb-arg";
+      const precioH = precio!=null ? `<strong>$${fmt2(precio)}</strong>` : `<span style="color:var(--muted)">—</span>`;
+      const variH  = vari===null ? "—" : `<span class="${vari>=0?"b-up":"b-dn"}">${vari>=0?"+":""}${vari.toFixed(2)}%</span>`;
+      const vtoStr = new Date(b.vto).toLocaleDateString("es-AR",{year:"numeric",month:"2-digit"});
+      return `<tr data-ticker="${b.ticker}">
+        <td><span class="b-ticker">${b.ticker}</span></td>
+        <td><span class="b-nombre">${b.nombre}</span></td>
+        <td><span class="b-badge ${mBadge}">${b.moneda}</span></td>
+        <td><span class="b-badge ${lBadge}">${b.ley}</span></td>
+        <td>${b.cupon}%</td>
+        <td>${vtoStr}</td>
+        <td>${precioH}</td>
+        <td>${variH}</td>
+        <td><button class="btn-load" style="background:rgba(56,189,248,.15);color:#7dd3fc;border:1px solid rgba(56,189,248,.3);margin-top:0" data-ticker="${b.ticker}">📊 Usar</button></td>
+      </tr>`;
+    }).join("");
+
+    tbody.querySelectorAll("[data-ticker]").forEach(el=>{
+      el.addEventListener("click", e=>{
+        const tk = e.currentTarget.dataset.ticker || e.target.closest("[data-ticker]")?.dataset.ticker;
+        if(!tk) return;
+        const b = _bonos.find(x=>x.ticker===tk); if(!b) return;
+        const precio = b.live ? parseFloat(b.live.ultimo??b.live.precio??0) : null;
+        // Cargar en YTM card
+        const setVal = (id,v) => { const el=Util.$(id); if(el&&v!=null) el.value=v; };
+        setVal("ytm-face", b.face);
+        setVal("ytm-price", precio);
+        setVal("ytm-coupon", b.cupon);
+        setVal("ytm-years", parseFloat(b.years.toFixed(2)));
+        Util.$("ytm-freq").value = b.freq;
+        // Cargar en duration card
+        setVal("dur-face", b.face);
+        setVal("dur-price", precio);
+        setVal("dur-coupon", b.cupon);
+        setVal("dur-years", parseFloat(b.years.toFixed(2)));
+        Util.$("dur-freq").value = b.freq;
+        // Cargar en current yield
+        setVal("cy-face", b.face);
+        setVal("cy-price", precio);
+        setVal("cy-coupon", b.cupon);
+        setVal("cy-years", parseFloat(b.years.toFixed(2)));
+        Util.$("cy-freq").value = b.freq;
+        // Ir al tab de bonos
+        document.querySelectorAll(".tab-btn").forEach(bt=>bt.classList.remove("active"));
+        document.querySelectorAll(".tab-panel").forEach(p=>p.classList.remove("active"));
+        document.querySelector('[data-tab="bonos"]')?.classList.add("active");
+        document.getElementById("tab-bonos")?.classList.add("active");
+        // Flash feedback
+        const liveInfo = `<span class="live-badge">● LIVE</span> <strong>${tk}</strong> — $${precio!=null?precio.toFixed(2):"—"} · Var: ${b.live?parseFloat(b.live.variacion??0).toFixed(2)+"%":"—"}`;
+        ["ytm-live-badge","dur-live-badge"].forEach(id=>{ const el=Util.$(id); if(el){el.style.display="block";el.innerHTML=liveInfo;} });
+      });
+    });
+  }
+
+  // filtros reactivos
+  ["expl-q","expl-moneda","expl-ley"].forEach(id=>Util.$(id)?.addEventListener("input",renderExpl));
+  Util.$("btn-expl-refresh")?.addEventListener("click",()=>{ _preciosCache=null; cargarExplorador(); });
+
+  // solo carga si el tab se abre (lazy)
+  document.querySelectorAll(".tab-btn").forEach(btn=>{
+    if(btn.dataset.tab==="explorador") btn.addEventListener("click",()=>{ if(!_bonos.length) cargarExplorador(); });
+  });
+})();
+
+/* ===== BOTONES "TRAER PRECIO LIVE" EN CARDS DE BONOS ===== */
+async function loadLivePrecio(tickerInputId, badgeId, targets) {
+  const ticker = (Util.$(tickerInputId)?.value||"").trim().toUpperCase();
+  if(!ticker) return;
+  const badge = Util.$(badgeId);
+  if(badge){ badge.style.display="block"; badge.innerHTML="⏳ Buscando…"; }
+  const bono = BONOS_ARG.find(b=>b.ticker===ticker);
+  const live = await getPrecioTicker(ticker);
+  const precio = live?.precio;
+  const info = bono ? `${bono.nombre}` : ticker;
+  if(badge) badge.innerHTML = live
+    ? `<span class="live-badge">● LIVE</span> <strong>${ticker}</strong> $${precio!=null?precio.toFixed(2):"—"} · Var: ${live.variacion>=0?"+":""}${live.variacion.toFixed(2)}% · ${live.fechaHora}`
+    : `⚠️ ${ticker} no encontrado en la API`;
+  if(!live) return;
+  targets.forEach(({id,val})=>{ const el=Util.$(id); if(el&&val!=null) el.value=val; });
+  if(bono){
+    const yrsEl = targets.find(t=>t.id.includes("years"));
+    if(yrsEl){ const el=Util.$(yrsEl.id); if(el) el.value=parseFloat(getAnios(bono.vto).toFixed(2)); }
+    const faceEl = targets.find(t=>t.id.includes("face"));
+    if(faceEl){ const el=Util.$(faceEl.id); if(el) el.value=bono.face; }
+    const cpEl = targets.find(t=>t.id.includes("coupon")||t.id.includes("cpn"));
+    if(cpEl){ const el=Util.$(cpEl.id); if(el) el.value=bono.cupon; }
+  }
+}
+
+Util.$("btn-ytm-load")?.addEventListener("click",()=>loadLivePrecio("ytm-ticker","ytm-live-badge",[
+  {id:"ytm-price", val: null}, // val null = se llena desde live.precio abajo
+]));
+
+// override para pasar precio correctamente
+document.getElementById("btn-ytm-load")?.addEventListener("click", async ()=>{
+  const ticker=(Util.$("ytm-ticker")?.value||"").trim().toUpperCase(); if(!ticker) return;
+  const badge=Util.$("ytm-live-badge"); if(badge){badge.style.display="block";badge.innerHTML="⏳ Buscando…";}
+  const bono=BONOS_ARG.find(b=>b.ticker===ticker);
+  const live=await getPrecioTicker(ticker);
+  if(!live){if(badge)badge.innerHTML=`⚠️ ${ticker} no encontrado`; return;}
+  if(badge) badge.innerHTML=`<span class="live-badge">● LIVE</span> <strong>${ticker}</strong> $${live.precio.toFixed(2)} · Var: ${live.variacion>=0?"+":""}${live.variacion.toFixed(2)}% · ${live.fechaHora}`;
+  Util.$("ytm-price").value=live.precio.toFixed(2);
+  if(bono){ Util.$("ytm-face").value=bono.face; Util.$("ytm-coupon").value=bono.cupon; Util.$("ytm-years").value=getAnios(bono.vto).toFixed(2); Util.$("ytm-freq").value=bono.freq; }
+});
+
+document.getElementById("btn-dur-load")?.addEventListener("click", async ()=>{
+  const ticker=(Util.$("dur-ticker")?.value||"").trim().toUpperCase(); if(!ticker) return;
+  const badge=Util.$("dur-live-badge"); if(badge){badge.style.display="block";badge.innerHTML="⏳ Buscando…";}
+  const bono=BONOS_ARG.find(b=>b.ticker===ticker);
+  const live=await getPrecioTicker(ticker);
+  if(!live){if(badge)badge.innerHTML=`⚠️ ${ticker} no encontrado`; return;}
+  if(badge) badge.innerHTML=`<span class="live-badge">● LIVE</span> <strong>${ticker}</strong> $${live.precio.toFixed(2)} · Var: ${live.variacion>=0?"+":""}${live.variacion.toFixed(2)}%`;
+  Util.$("dur-price").value=live.precio.toFixed(2);
+  if(bono){ Util.$("dur-face").value=bono.face; Util.$("dur-coupon").value=bono.cupon; Util.$("dur-years").value=getAnios(bono.vto).toFixed(2); Util.$("dur-freq").value=bono.freq; }
+});
+
+document.getElementById("btn-cy-load")?.addEventListener("click", async ()=>{
+  const ticker=(Util.$("cy-ticker")?.value||"").trim().toUpperCase(); if(!ticker) return;
+  const bono=BONOS_ARG.find(b=>b.ticker===ticker);
+  const live=await getPrecioTicker(ticker);
+  if(!live) return;
+  Util.$("cy-price").value=live.precio.toFixed(2);
+  if(bono){ Util.$("cy-face").value=bono.face; Util.$("cy-coupon").value=bono.cupon; Util.$("cy-years").value=getAnios(bono.vto).toFixed(2); Util.$("cy-freq").value=bono.freq; }
+});
+
+
 </script>
 </body>
 </html>
